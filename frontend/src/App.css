@@ -1,0 +1,11 @@
+.App {
+    min-height: 100vh; /* Приложение занимает всю высоту экрана */
+}
+
+body {
+    touch-action: manipulation;
+}
+.page-content {
+    flex-grow: 1;
+    /* Здесь НЕТ padding-bottom */
+}

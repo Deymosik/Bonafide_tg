@@ -1,0 +1,77 @@
+/* frontend/src/components/FaqItem.css */
+.faq-item {
+    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.faq-question {
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.faq-arrow {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    transition: transform 0.3s ease;
+    transform: rotate(90deg);
+}
+
+.faq-arrow.open {
+    transform: rotate(-90deg);
+}
+
+.faq-answer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease, padding-bottom 0.3s ease; /* 1. Добавляем padding-bottom в анимацию */
+}
+
+.faq-answer.open {
+    grid-template-rows: 1fr;
+    padding-bottom: 16px; /* 2. Применяем нижний padding, только когда блок открыт */
+}
+
+.faq-answer-content {
+    /* 3. Убираем вертикальные padding отсюда и добавляем только горизонтальные */
+    padding: 0 16px;
+
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--tg-theme-hint-color, #333333);
+    overflow: hidden;
+}
+
+/* Стили для контента, сгенерированного из Markdown */
+.faq-answer-content p {
+    margin: 0 0 1em 0; /* Добавляем отступ между параграфами */
+}
+.faq-answer-content p:last-child {
+    margin-bottom: 0; /* Убираем отступ у последнего параграфа */
+}
+
+.faq-answer-content ul,
+.faq-answer-content ol {
+    padding-left: 20px;
+    margin: 0 0 1em 0;
+}
+
+.faq-answer-content a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+}
+.faq-answer-content a:hover {
+    text-decoration: underline;
+}

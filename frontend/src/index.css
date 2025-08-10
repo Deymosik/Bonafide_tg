@@ -1,0 +1,18 @@
+/* Основные стили, использующие переменные Telegram */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Эти переменные Telegram Web Apps API подставит автоматически */
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+}
+
+/* Убираем стандартные стили для ссылок, чтобы управлять ими самим */
+a {
+    text-decoration: none;
+    color: inherit;
+}

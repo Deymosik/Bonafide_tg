@@ -1,0 +1,156 @@
+.home-page {
+    padding: 0;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    /* Добавляем отступы здесь, чтобы они не влияли на панель категорий */
+    padding: 0 12px 12px 12px;
+}
+
+.no-products-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--tg-theme-hint-color, #999999);
+    grid-column: 1 / -1; /* Занимает всю ширину грида */
+}
+
+.end-of-list {
+    text-align: center;
+    padding: 20px;
+    color: var(--tg-theme-hint-color, #999999);
+}
+.product-link {
+    text-decoration: none; /* Убираем подчеркивание */
+    color: inherit; /* Наследуем цвет текста */
+}
+.cart-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    z-index: 1000;
+}
+
+.cart-fab-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: red;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Блок с фильтрами и категориями */
+.filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 0 0 12px;
+    position: sticky;
+    top: 0;
+    /* Добавляем fallback цвет для фона */
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    z-index: 100;
+}
+
+.sort-button {
+    /* Добавляем fallback цвет для фона кнопки */
+    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    border: none;
+    border-radius: 12px;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.sort-button svg {
+    width: 20px;
+    height: 20px;
+    /* Добавляем fallback цвет для иконки */
+    fill: var(--tg-theme-text-color, #000000);
+    transition: transform 0.2s ease;
+}
+
+.categories-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    /* Убираем скроллбар */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.categories-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    /* Добавляем fallback цвет для фона */
+    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    /* Добавляем fallback цвет для текста */
+    color: var(--tg-theme-text-color, #000000);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.category-chip.active {
+    /* Добавляем fallback цвета для активной категории */
+    background: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.no-products-found {
+    text-align: center;
+    padding: 40px;
+    color: var(--tg-theme-hint-color);
+}
+
+/* Стили для меню сортировки */
+.sort-menu h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.sort-option {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.sort-option:active {
+    background-color: rgba(0,0,0,0.1);
+}
+.sort-option.active {
+    /* Добавляем fallback цвет для активного пункта */
+    color: var(--tg-theme-button-color, #007aff);
+    font-weight: 600;
+}

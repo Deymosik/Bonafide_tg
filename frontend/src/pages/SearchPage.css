@@ -1,0 +1,88 @@
+/* frontend/src/pages/SearchPage.css */
+
+.search-page {
+    padding: 16px;
+}
+
+/* Прилипающая панель поиска */
+.search-bar-container {
+    position: sticky;
+    top: 0;
+    padding: 8px 0 16px 0;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    z-index: 100;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px 0 44px; /* Отступ слева для иконки */
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #000000);
+}
+.search-input::placeholder {
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+.search-input:focus {
+    outline: none;
+}
+
+/* Иконка внутри поля ввода */
+.search-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: #8e8e93;
+}
+
+/* Результаты поиска */
+.search-results {
+    padding-top: 8px;
+}
+
+/* Мы можем переиспользовать стили .products-grid и .product-link с HomePage.css,
+   но для надежности можно их скопировать и сюда. */
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.product-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.search-message {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 16px;
+}
+
+.search-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 16px;
+}
+
+.search-message p {
+    margin-top: 16px;
+}

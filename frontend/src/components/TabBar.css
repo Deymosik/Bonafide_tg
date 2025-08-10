@@ -1,0 +1,81 @@
+/* frontend/src/components/TabBar.css */
+.tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px; /* Стандартная высота для Tab Bar */
+
+    /* Используем цвет фона темы, но с небольшой прозрачностью для "стеклянного" эффекта */
+    background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
+
+    /* Включаем размытие фона под панелью (для iOS и современных браузеров) */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom); /* Отступ для "челки" на iPhone */
+}
+
+.tab-bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    flex-grow: 1;
+    height: 100%;
+
+    /* Цвет неактивной иконки и текста */
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.tab-bar-item svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--tg-theme-hint-color, #f8f8f8);
+    margin-bottom: 2px;
+    transition: all 0.2s ease;
+}
+
+.tab-bar-item span {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Стили для АКТИВНОЙ кнопки */
+.tab-bar-item.active {
+    /* Цвет активной иконки и текста */
+    color: var(--tg-theme-button-color, #007aff);
+}
+
+.tab-bar-item.active svg {
+
+    transform: scale(1.1); /* Слегка увеличиваем активную иконку */
+}
+
+/* Стили для значка на корзине */
+.cart-icon-wrapper {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--tg-theme-secondary-bg-color, #f8f8f8); /* Рамка в цвет фона панели */
+}

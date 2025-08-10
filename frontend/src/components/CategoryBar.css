@@ -1,0 +1,90 @@
+/* frontend/src/components/CategoryBar.css */
+
+/* Главный контейнер, который будет растягиваться */
+.category-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%; /* Занимает всю доступную ширину в .filters-bar */
+    height: 40px;
+    /* ВАЖНО: Предотвращает "выталкивание" контейнера за пределы экрана */
+    min-width: 0;
+    padding: 12px 0 12px 0;
+}
+
+/* Кнопки "Назад" и "Все" - фиксированный размер */
+.category-bar-button, .category-chip {
+    flex-shrink: 0;
+}
+
+.category-bar-button {
+    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    border: none;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.category-bar-button svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--tg-theme-text-color, #000000);
+}
+
+.category-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--tg-theme-text-color, #000000);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.category-chip.active {
+    background: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+/* Чип с родительской категорией, чтобы он был кликабельным */
+.category-chip.current-parent-chip {
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-hint-color, #8e8e93);
+    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+}
+
+/* Контейнер для скролла - теперь он будет правильно ограничен */
+.categories-scroll-container {
+    flex-grow: 1; /* Занимает все оставшееся пространство */
+    overflow-x: auto; /* Включаем горизонтальный скролл */
+    height: 100%;
+    /* ВАЖНО: Еще одно свойство для предотвращения "выталкивания" */
+    min-width: 0;
+
+    /* Скрываем сам скроллбар */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.categories-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Внутренний блок, который будет скроллиться */
+.categories-scroll-inner {
+    display: flex; /* Выстраиваем чипы в ряд */
+    gap: 8px;
+    height: 100%;
+    align-items: center;
+}
+
+/* Анимации оставляем без изменений */
+.category-chip {
+    animation: slideIn 0.3s ease-out both;
+}
+@keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

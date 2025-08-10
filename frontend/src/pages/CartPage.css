@@ -1,0 +1,285 @@
+/* frontend/src/pages/CartPage.css */
+
+.cart-page {
+    padding: 16px;
+    /* Убираем старый padding-bottom, так как теперь отступ создает сам sticky-footer */
+}
+
+/* --- СТИЛИ ДЛЯ ПУСТОЙ КОРЗИНЫ (НОВЫЕ) --- */
+.cart-page.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* Высота рассчитывается так, чтобы блок занимал видимую часть экрана над TabBar */
+    height: calc(100vh - 80px - 60px); /* 100% высоты - ~хедер - TabBar */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.empty-cart-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 16px 0 8px 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.empty-cart-subtitle {
+    font-size: 16px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    max-width: 280px;
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.empty-cart-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+
+/* --- ОБЩИЕ СТИЛИ СТРАНИЦЫ (ОБНОВЛЕННЫЕ) --- */
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cart-header h1, .form-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.clear-cart-btn {
+    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--tg-theme-hint-color, #8e8e93);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.clear-cart-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--tg-theme-secondary-bg-color, #f0f2f5);
+}
+
+/* --- СПИСОК ТОВАРОВ (ОБНОВЛЕННЫЙ) --- */
+.cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Добавляем отступ снизу, равный высоте футера, чтобы он не перекрывал последний товар */
+    padding-bottom: 180px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    padding: 12px;
+    border-radius: 16px;
+    animation: fadeIn 0.3s ease; /* Анимация появления */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cart-item-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.cart-item-info {
+    flex-grow: 1;
+    overflow: hidden; /* Важно для работы text-overflow */
+}
+
+.cart-item-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000000);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cart-item-price {
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 15px;
+}
+
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    border-radius: 20px;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.cart-item-controls button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    color: var(--tg-theme-text-color, #000000);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.cart-item-controls span {
+    font-weight: 600;
+    font-size: 16px;
+    min-width: 20px;
+    text-align: center;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+
+/* --- ФУТЕР И СВОДКА (ОБНОВЛЕННЫЕ) --- */
+
+.sticky-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    /* Вычисляем позицию от низа, учитывая TabBar и безопасную зону */
+    bottom: calc(60px + env(safe-area-inset-bottom));
+}
+
+.upsell-hint {
+    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    color: var(--tg-theme-link-color, #007aff);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.order-summary {
+    width: 100%;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.summary-row.discount span {
+    color: var(--tg-theme-link-color, #34c759); /* Используем цвет ссылок для скидки */
+}
+
+.summary-row.final-total {
+    font-size: 20px;
+    font-weight: 600;
+    border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.checkout-btn:disabled {
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--tg-theme-hint-color, #8e8e93);
+    cursor: not-allowed;
+}
+
+
+/* --- ФОРМА ОФОРМЛЕНИЯ ЗАКАЗА (ОБНОВЛЕННАЯ) --- */
+.checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Увеличили отступ */
+    /* Добавляем отступ снизу, чтобы футер не перекрывал последнее поле */
+    padding-bottom: 120px;
+}
+
+.checkout-form input[type="text"],
+.checkout-form input[type="tel"] {
+    width: 100%;
+    padding: 14px; /* Увеличили padding */
+    box-sizing: border-box;
+    border-radius: 12px; /* Увеличили скругление */
+    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    font-size: 16px;
+}
+
+.shipping-options {
+    display: flex;
+    gap: 12px;
+}
+
+.shipping-options label {
+    flex-grow: 1;
+    padding: 14px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid var(--tg-theme-hint-color, #c7c7cc);
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000000);
+    background-color: var(--tg-theme-bg-color, #ffffff);
+}
+
+.shipping-options label.active {
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border-color: var(--tg-theme-button-color, #007aff);
+    font-weight: 600;
+}
+
+.shipping-options input[type="radio"] {
+    display: none;
+}

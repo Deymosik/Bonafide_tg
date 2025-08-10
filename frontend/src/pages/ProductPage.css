@@ -1,0 +1,376 @@
+/* frontend/src/pages/ProductPage.css */
+
+.product-page {
+    padding-bottom: 80px; /* Оставляем место для липкой кнопки */
+}
+
+.loader {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+}
+
+.product-details {
+    padding: 16px;
+}
+
+.product-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.product-price-main {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 16px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.info-panels-product {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+/* Код для .info-panel уже должен быть в другом файле, но на всякий случай */
+.info-panel {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+
+.product-section {
+    margin-top: 24px;
+}
+
+.product-section h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--tg-theme-secondary-bg-color, #eee);
+}
+
+.spec-list {
+    list-style: none;
+    padding: 0;
+}
+
+.spec-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+}
+
+.spec-list li:last-child {
+    border-bottom: none;
+}
+
+/* Стили для липкого футера */
+.product-page .sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background-color: var(--tg-theme-bg-color, #fff);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    /* Анимация для плавного появления */
+    transition: all 0.3s ease-in-out;
+}
+
+/* Старая кнопка "Добавить в корзину" */
+.add-to-cart-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+
+/* НОВЫЕ СТИЛИ ДЛЯ РАЗДЕЛЕННОЙ КНОПКИ */
+
+/* Контейнер для двух новых кнопок */
+.cart-controls-container {
+    display: flex;
+    gap: 12px;
+    align-items: stretch; /* Растягиваем элементы на всю высоту */
+}
+
+/* Кнопка-ссылка "В корзине" */
+.go-to-cart-btn {
+    /* Занимает все доступное пространство */
+    flex-grow: 1;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+/* Контейнер для степпера "+/-" */
+.quantity-stepper {
+    display: flex;
+    align-items: center;
+    background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+    border-radius: 12px;
+}
+
+/* Кнопки "+" и "-" */
+.quantity-btn {
+    width: 48px; /* Фиксированная ширина для удобного нажатия */
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    color: var(--tg-theme-button-color, #007aff); /* Делаем кнопки в цвет акцента */
+    font-size: 24px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.quantity-btn:active {
+    background-color: rgba(0,0,0,0.1); /* Легкий эффект при нажатии */
+}
+
+/* Отображение количества */
+.quantity-display {
+    padding: 0 8px; /* Небольшие отступы по бокам */
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+}
+
+/* Стили для аудиоплеера */
+.audio-player {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Контейнер для горизонтального скролла (остается почти без изменений) */
+.info-cards-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 4px 0 12px 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.info-cards-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Новая прямоугольная карточка */
+.info-card-rectangle {
+    display: flex; /* Располагаем элементы (картинка, текст) в ряд */
+    align-items: center; /* Выравниваем по центру по вертикали */
+
+    /* Задаем размер прямоугольника */
+    width: 280px; /* Делаем карточку значительно шире */
+    height: 100px;
+    flex-shrink: 0; /* Предотвращает сжатие карточек */
+
+    background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--tg-theme-text-color);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.info-card-rectangle:active {
+    transform: scale(0.97);
+}
+
+/* Изображение внутри карточки (теперь слева) */
+.info-card-image-rect {
+    width: 100px; /* Фиксированная ширина для картинки */
+    height: 100px;
+    object-fit: cover;
+    flex-shrink: 0; /* Картинка не будет сжиматься */
+}
+
+/* Контейнер для текстового содержимого (справа) */
+.info-card-text-content {
+    flex-grow: 1; /* Занимает все оставшееся место */
+    padding: 12px;
+    /* Важно для работы text-overflow */
+    overflow: hidden;
+}
+
+/* Заголовок (теперь с возможностью переноса) */
+.info-card-title-rect {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+
+    /* Магия для переноса текста на несколько строк с многоточием */
+    line-height: 1.3;
+    max-height: 3.9em; /* 1.3em * 3 строки. Позволяет отобразить до 3 строк текста */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Ограничиваем 3 строками */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.related-products-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 4px 0 12px 0;
+    /* Убираем скроллбар */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.related-products-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Добавляем анимированное появление для секции */
+.related-section {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Контейнер для палитры цветов */
+.color-swatches-container {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    /* Можно добавить горизонтальный скролл, если цветов будет очень много */
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.color-swatches-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Сам "квадратик" с цветом */
+.color-swatch {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px; /* Слегка скругленные углы */
+    border: 2px solid transparent; /* Прозрачная рамка для выравнивания */
+    padding: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-swatch:active {
+    transform: scale(0.9);
+}
+
+/* Стиль для активного, текущего цвета */
+.color-swatch.active {
+    border-color: var(--tg-theme-button-color, #007aff); /* Рамка в цвет акцента темы */
+    cursor: default; /* Убираем курсор-руку, т.к. на него нельзя нажать */
+}
+.color-swatch.active:active {
+    transform: none; /* Убираем анимацию нажатия для активного */
+}
+
+/* Картинка внутри квадратика */
+.color-swatch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.product-page.switching-color {
+    opacity: 0.6;
+    pointer-events: none; /* Блокируем клики во время загрузки */
+    transition: opacity 0.2s ease-in-out;
+}
+
+.product-page.switching-color {
+    opacity: 0.6; /* Делаем контент полупрозрачным */
+    /* Запрещаем взаимодействие с элементами во время загрузки, чтобы избежать двойных кликов */
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Стили для контента описания, сгенерированного из CKEditor */
+.product-description-content p {
+    margin: 0 0 1em 0;
+    line-height: 1.6;
+}
+.product-description-content p:last-child {
+    margin-bottom: 0;
+}
+
+.product-description-content ul,
+.product-description-content ol {
+    padding-left: 20px;
+    margin: 0 0 1em 0;
+}
+
+.product-description-content a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+}
+.product-description-content a:hover {
+    text-decoration: underline;
+}
+
+.product-description-content strong {
+    font-weight: 600;
+}
+
+
+.product-title-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Выравниваем по верху */
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.product-title {
+    margin: 0; /* Убираем стандартные отступы */
+}
+
+/* Стили для кнопки "лайк" на странице товара */
+.favorite-button-page {
+    /* Отменяем абсолютное позиционирование */
+    position: static;
+
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+
+    /* Делаем фон в цвет второстепенного фона страницы */
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+}
+
+.favorite-button-page.active svg {
+    fill: var(--tg-theme-button-color, #ff3b30); /* Активный цвет как у кнопки */
+}
+
+.favorite-button-page:not(.active) svg {
+    fill: var(--tg-theme-text-color, #3c3c43); /* Неактивный цвет как у текста */
+}

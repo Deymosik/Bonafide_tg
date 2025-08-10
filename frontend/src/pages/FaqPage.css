@@ -1,0 +1,73 @@
+/* frontend/src/pages/FaqPage.css */
+.faq-page {
+    padding: 16px;
+}
+
+.faq-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Скелетон для эффекта загрузки */
+.faq-skeleton {
+    width: 100%;
+    height: 57px; /* Примерная высота закрытого вопроса */
+    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+/* Стили для информационных секций */
+.info-section, .faq-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+}
+
+.info-section:last-of-type, .faq-section:last-of-type {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.info-section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.info-section-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--tg-theme-hint-color, #333333);
+}
+
+/* Стили для контента, сгенерированного из CKEditor */
+.info-section-content p {
+    margin: 0 0 1em 0;
+}
+.info-section-content p:last-child {
+    margin-bottom: 0;
+}
+
+.info-section-content ul,
+.info-section-content ol {
+    padding-left: 20px;
+    margin: 0 0 1em 0;
+}
+
+.info-section-content a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+    font-weight: 500;
+}
+.info-section-content a:hover {
+    text-decoration: underline;
+}
