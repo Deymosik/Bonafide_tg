@@ -1,0 +1,53 @@
+# ======================== #
+#    Python / Django       #
+# ======================== #
+
+# Виртуальное окружение
+/backend/venv/
+
+# Файлы с переменными окружения (СЕКРЕТЫ!)
+/backend/.env
+
+# Кэш Python
+/backend/__pycache__/
+/backend/*.pyc
+
+# База данных SQLite (если используется для разработки)
+/backend/db.sqlite3
+
+# Медиафайлы (которые загружают пользователи)
+/backend/media/
+
+
+# ======================== #
+#      Node.js / React     #
+# ======================== #
+
+# Зависимости
+/frontend/node_modules/
+/backend/node_modules/
+
+# "Собранный" фронтенд
+/frontend/build/
+
+# Файлы с переменными окружения (СЕКРЕТЫ!)
+/frontend/.env.*
+
+# Логи и отчеты
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+
+
+# ======================== #
+#      IDE / OS Files      #
+# ======================== #
+
+# WebStorm / JetBrains
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
