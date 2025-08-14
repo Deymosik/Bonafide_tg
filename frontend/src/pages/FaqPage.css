@@ -1,89 +1,102 @@
 /* frontend/src/pages/FaqPage.css */
+
 .faq-page {
     padding: 16px;
-    /* Добавляем анимацию появления для всей страницы */
+    padding-bottom: 32px;
+}
+
+.faq-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 24px 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+/* --- КОНТЕЙНЕР ДЛЯ БЛОКА С ВКЛАДКАМИ --- */
+.info-tabs-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+}
+
+/* --- СЕГМЕНТИРОВАННЫЙ КОНТРОЛ (ПЕРЕКЛЮЧАТЕЛЬ) --- */
+.segmented-control {
+    display: flex;
+    background-color: var(--tg-theme-secondary-bg-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.segment-button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background-color: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.segment-button.active {
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- КОНТЕЙНЕР ДЛЯ КОНТЕНТА ВКЛАДОК --- */
+.content-container {
+    position: relative;
+    min-height: 150px; /* Минимальная высота, чтобы не было "прыжков" */
+}
+
+.content-tab {
     animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.faq-title {
-    font-size: 20px; /* Адаптивный размер */
-    text-align: center;
-    font-weight: 700;
-    margin: 0 0 20px 0;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-/* --- СЕТКА ДЛЯ ИНФОРМАЦИОННЫХ КАРТОЧЕК --- */
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Одна колонка по умолчанию */
-    gap: 16px;
-    margin-top: 24px; /* Отступ после карусели */
-}
-
-/* Карточка для информационного блока */
-.info-card {
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border-radius: 16px;
-    padding: 20px;
-}
-
-.info-section-title {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 12px 0;
-    color: var(--tg-theme-text-color, #000000);
-}
-
+/* --- СТИЛИ ДЛЯ ИНФО-СЕКЦИЙ ВНУТРИ ВКЛАДОК --- */
 .info-section-content {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.6;
-    color: var(--tg-theme-hint-color, #333333);
+    color: var(--tg-theme-text-color, #333333);
 }
-
-/* Стили для контента из CKEditor (остаются, но улучшаем) */
-.info-section-content p {
-    margin-top: 0;
-    margin-bottom: 1em;
+.info-section-placeholder {
+    color: var(--tg-theme-hint-color, #8e8e93);
+    padding: 20px 0;
+    text-align: center;
 }
-.info-section-content p:last-child {
-    margin-bottom: 0;
-}
-.info-section-content ul,
-.info-section-content ol {
-    padding-left: 20px;
-    margin: 0 0 1em 0;
-}
+.info-section-content p { margin: 0 0 1.2em 0; }
+.info-section-content p:last-child { margin-bottom: 0; }
+.info-section-content ul, .info-section-content ol { padding-left: 20px; margin: 0 0 1.2em 0; }
 .info-section-content a {
     color: var(--tg-theme-link-color, #007aff);
     text-decoration: none;
     font-weight: 500;
-    border-bottom: 1px solid transparent; /* Для красивого эффекта */
-    transition: border-color 0.2s ease;
 }
-.info-section-content a:hover {
-    border-bottom-color: var(--tg-theme-link-color, #007aff);
-}
+.info-section-content a:hover { text-decoration: underline; }
 
-.contact-section p {
-    margin-bottom: 8px;
-}
-
-/* --- СЕКЦИЯ FAQ (АККОРДЕОН) --- */
-.faq-section {
-    margin-top: 32px; /* Увеличиваем отступ сверху */
-}
-
-.faq-section-title {
-    font-size: 22px;
+/* --- ОБЩИЙ ЗАГОЛОВОК ДЛЯ СЕКЦИЙ FAQ И КОНТАКТОВ --- */
+.info-section-title {
+    font-size: 20px;
+    text-align: center;
     font-weight: 600;
-    margin: 0 0 16px 0;
+    margin: 0 0 16px 0; /* Увеличили нижний отступ */
     color: var(--tg-theme-text-color, #000000);
+}
+
+/* --- КОНТЕЙНЕР ДЛЯ АККОРДЕОНА FAQ --- */
+.faq-accordion-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
 }
 
 .faq-list {
@@ -91,11 +104,37 @@
     flex-direction: column;
 }
 
-/* Скелетон для FAQ (без изменений) */
 .faq-skeleton {
     width: 100%;
     height: 57px;
     background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
     border-radius: 12px;
     margin-bottom: 8px;
+}
+
+/* --- БЛОК С КОНТАКТАМИ --- */
+.contacts-section {
+    /* Убрали отступы, так как они теперь у родительских блоков */
+}
+
+.contacts-content p {
+    font-size: 15px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+
+.contact-button {
+    display: block;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
 }

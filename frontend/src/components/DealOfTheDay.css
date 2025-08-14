@@ -2,7 +2,7 @@
 .deal-container {
     display: flex;
     /* По умолчанию горизонтальный вид */
-    flex-direction: column;
+    flex-direction: row;
     background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
     border-radius: 16px;
     margin: 12px 12px 0px 12px;

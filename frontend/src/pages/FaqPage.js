@@ -1,4 +1,5 @@
 // frontend/src/pages/FaqPage.js
+
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api';
 import FaqItem from '../components/FaqItem';
@@ -8,86 +9,105 @@ import './FaqPage.css';
 
 const FaqPage = () => {
     const [faqItems, setFaqItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingFaq, setLoadingFaq] = useState(true);
     const settings = useSettings();
 
+    // 1. По умолчанию открываем вкладку "О нас"
+    const [activeTab, setActiveTab] = useState('about');
+
     useEffect(() => {
+        // Загрузка вопросов остается без изменений
         apiClient.get(`/faq/`)
             .then(response => {
                 setFaqItems(response.data);
             })
             .catch(error => console.error("Ошибка при загрузке FAQ:", error))
-            .finally(() => {
-                setLoading(false);
-            });
+            .finally(() => setLoadingFaq(false));
     }, []);
 
-    // Компонент для рендеринга секций остается, но теперь он будет внутри карточки
-    const InfoSection = ({ title, content, isCard = true }) => {
-        if (!content) return null;
+    // 2. Убираем "Вопросы" из массива вкладок
+    const tabs = [
+        { id: 'about', title: 'О нас' },
+        { id: 'delivery', title: 'Доставка' },
+        { id: 'warranty', title: 'Гарантия' },
+    ];
 
-        const contentHtml = <div className="info-section-content" dangerouslySetInnerHTML={{ __html: content }} />;
-
-        if (!isCard) {
-            return (
-                <div className="info-section">
-                    <h2 className="info-section-title">{title}</h2>
-                    {contentHtml}
-                </div>
-            )
-        }
-
-        return (
-            <div className="info-card">
-                <h2 className="info-section-title">{title}</h2>
-                {contentHtml}
-            </div>
-        );
+    const SectionContent = ({ content }) => {
+        if (!content) return <p className="info-section-placeholder">Информация скоро появится.</p>;
+        return <div className="info-section-content" dangerouslySetInnerHTML={{ __html: content }} />;
     };
 
     return (
         <div className="faq-page">
-            <h1 className="faq-title">Информация</h1>
+            <h1 className="faq-title">О магазине</h1>
 
-            <InfoCarousel images={settings.images} />
+            {/* Блок с переключателем и контентом вкладок */}
+            <div className="info-tabs-section">
+                <div className="segmented-control">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            className={`segment-button ${activeTab === tab.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            {tab.title}
+                        </button>
+                    ))}
+                </div>
 
-            <div className="info-grid">
-                {/* Рендерим наши информационные блоки как карточки */}
-                <InfoSection title="О нас" content={settings.about_us_section} />
-                <InfoSection title="Условия доставки" content={settings.delivery_section} />
-                <InfoSection title="Гарантия и возврат" content={settings.warranty_section} />
-
-                {(settings.contact_phone || settings.manager_username) && (
-                    <div className="info-card">
-                        <h2 className="info-section-title">Контакты</h2>
-                        <div className="info-section-content contact-section">
-                            {settings.contact_phone && (
-                                <p><strong>Телефон:</strong> {settings.contact_phone}</p>
-                            )}
-                            {settings.manager_username && (
-                                <p><strong>Поддержка:</strong> <a href={`https://t.me/${settings.manager_username}`}>@{settings.manager_username}</a></p>
-                            )}
+                <div className="content-container">
+                    {activeTab === 'about' && (
+                        <div className="content-tab active" key="about">
+                            <InfoCarousel images={settings.images} />
+                            <SectionContent content={settings.about_us_section} />
                         </div>
-                    </div>
-                )}
-            </div>
-
-            {(loading || faqItems.length > 0) && (
-                <div className="faq-section">
-                    <h2 className="faq-section-title">Частые вопросы</h2>
-                    {loading ? (
-                        <div className="faq-list">
-                            {[...Array(3)].map((_, i) => <div key={i} className="faq-skeleton"></div>)}
+                    )}
+                    {activeTab === 'delivery' && (
+                        <div className="content-tab active" key="delivery">
+                            <SectionContent content={settings.delivery_section} />
                         </div>
-                    ) : (
-                        <div className="faq-list">
-                            {faqItems.map(item => (
-                                <FaqItem key={item.id} question={item.question} answer={item.answer} />
-                            ))}
+                    )}
+                    {activeTab === 'warranty' && (
+                        <div className="content-tab active" key="warranty">
+                            <SectionContent content={settings.warranty_section} />
                         </div>
                     )}
                 </div>
-            )}
+            </div>
+
+            {/* 3. БЛОК С FAQ ТЕПЕРЬ НАХОДИТСЯ ЗДЕСЬ, ОТДЕЛЬНО И ВСЕГДА ВИДИМ */}
+            <div className="faq-accordion-section">
+                <h2 className="info-section-title">Частые вопросы</h2>
+                {loadingFaq ? (
+                    <div className="faq-list">
+                        {[...Array(4)].map((_, i) => <div key={i} className="faq-skeleton"></div>)}
+                    </div>
+                ) : faqItems.length > 0 ? (
+                    <div className="faq-list">
+                        {faqItems.map(item => (
+                            <FaqItem key={item.id} question={item.question} answer={item.answer} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="info-section-placeholder">Пока здесь нет частых вопросов.</p>
+                )}
+            </div>
+
+            {/* Блок с контактами остается в конце */}
+            <div className="contacts-section">
+                <h2 className="info-section-title">Остались вопросы?</h2>
+                <div className="contacts-content">
+                    <p>Свяжитесь с нашим менеджером в Telegram для быстрой консультации.</p>
+                    <a
+                        href={`https://t.me/${settings.manager_username}`}
+                        className="contact-button"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Написать менеджеру
+                    </a>
+                </div>
+            </div>
         </div>
     );
 };

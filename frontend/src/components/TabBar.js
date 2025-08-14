@@ -33,7 +33,7 @@ const TabBar = () => {
             </NavLink>
             <NavLink to="/faq" className="tab-bar-item">
                 <FaqIcon />
-                <span>FAQ</span>
+                <span>Инфо</span>
             </NavLink>
         </nav>
     );
