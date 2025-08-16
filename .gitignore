@@ -5,6 +5,10 @@
 # Виртуальное окружение
 /backend/venv/
 
+# Docker
+Dockerfile
+.dockerignore
+
 # Файлы с переменными окружения (СЕКРЕТЫ!)
 /backend/.env
 
@@ -50,3 +54,20 @@
 
 # macOS
 .DS_Store
+
+# Git
+.git
+.gitignore
+
+# Локальные настройки и кэш
+__pycache__/
+*.pyc
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Локальная база данных и медиафайлы (их не должно быть в образе!)
+db.sqlite3
+media/
