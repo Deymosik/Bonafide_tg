@@ -1,0 +1,52 @@
+# Название нашего процесса автоматизации
+name: Deploy to Cloud.ru
+
+# Триггер: этот процесс будет запускаться при каждом git push в ветку 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+# Задачи, которые будет выполнять наш "робот"
+jobs:
+  build-and-deploy:
+    # "Робот" будет работать на виртуальной машине с последней версией Ubuntu
+    runs-on: ubuntu-latest
+
+    # Шаги, которые нужно выполнить
+    steps:
+      # Шаг 1: Клонируем код из репозитория на виртуальную машину
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг 2: Авторизация в реестре контейнеров cloud.ru
+      # Здесь мы используем стандартное действие для входа в Docker-совместимый реестр
+      - name: Log in to Cloud.ru Artifact Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.REGISTRY_URL }} # URL нашего реестра из cloud.ru
+          username: ${{ secrets.REGISTRY_USERNAME }} # Логин для доступа к реестру
+          password: ${{ secrets.REGISTRY_PASSWORD }} # Пароль для доступа к реестру
+
+      # Шаг 3: Сборка и отправка Docker-образа в реестр
+      # Мы используем 'build-push-action' для автоматизации этого процесса
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: . # Собирать образ из корневой папки проекта
+          push: true # Отправить образ в реестр после сборки
+          # Имя и тег для нашего образа. Мы используем URL реестра и короткий хэш коммита для уникальности.
+          tags: ${{ secrets.REGISTRY_URL }}/${{ github.repository }}:${{ github.sha }}
+
+      # Шаг 4: Развертывание нового образа в Managed Containers
+      # Это самый специфичный для облака шаг. Нам нужно будет установить CLI-утилиту cloud.ru
+      - name: Deploy to Cloud.ru Managed Containers
+        run: |
+          # Здесь будет команда для обновления контейнера.
+          # Она может выглядеть примерно так (ТОЧНУЮ КОМАНДУ нужно взять из документации cloud.ru):
+          # 1. Установить утилиту командной строки cloud.ru
+          # curl -sSL https://storage.cloud.ru/cli/install.sh | bash
+          # 2. Авторизоваться с помощью токена
+          # cloudru-cli --token ${{ secrets.CLOUDRU_API_TOKEN }} login
+          # 3. Дать команду на обновление нашего приложения новым образом
+          # cloudru-cli containers app update my-shop-app --image ${{ secrets.REGISTRY_URL }}/${{ github.repository }}:${{ github.sha }}
+          echo "Deployment step placeholder. Replace with actual cloud.ru CLI commands."

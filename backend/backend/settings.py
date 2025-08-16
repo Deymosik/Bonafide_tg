@@ -1,6 +1,7 @@
 # backend/backend/settings.py
 
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # так и на сервере с PostgreSQL (когда переменные будут в .env файле)
 if 'DATABASE_URL' in os.environ:
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=False) # Убедитесь, что ssl_require=False
     }
 else:
     DATABASES = {
