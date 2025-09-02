@@ -1,9 +1,9 @@
 // frontend/src/context/CartContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 import apiClient from '../api';
 
-const CartContext = createContext();
+
+export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {

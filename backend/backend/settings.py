@@ -1,14 +1,10 @@
 # backend/backend/settings.py
-
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
 import os
-from datetime import timedelta
-# ИЗМЕНЕНИЕ 1: Мы будем использовать стандартную библиотеку os для переменных,
-# поэтому убираем импорты dj_database_url и decouple.
-# from decouple import config - УДАЛИТЬ
-# import dj_database_url - УДАЛИТЬ
+
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,13 +13,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default-insecure-key')
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-# Эта часть идеальна, ничего не меняем
-ALLOWED_HOSTS = [
-    'bonafide55.ru',
-    'www.bonafide55.ru',
-    '127.0.0.1',
-    # Сюда нужно будет добавить IP-адрес вашего сервера после его создания
-]
+# --- 1. КЛЮЧЕВОЕ ИЗМЕНЕНИЕ ДЛЯ ALLOWED_HOSTS ---
+# Теперь хосты читаются из переменной окружения.
+# На сервере вы укажете: ALLOWED_HOSTS_STR="bonafide55.ru,www.bonafide55.ru"
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS_STR', '127.0.0.1,localhost')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',')]
 
 # INSTALLED_APPS и MIDDLEWARE остаются без изменений
 INSTALLED_APPS = [
@@ -33,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ckeditor',
+    'django_ckeditor_5',
     'shop',
     'rest_framework',
     'corsheaders',
@@ -55,18 +49,14 @@ MIDDLEWARE = [
 # backend/backend/settings.py
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
 }
 
-# Эта часть идеальна, ничего не меняем
-#CORS_ALLOWED_ORIGINS = [
- #   "https://bonafide55.ru",
-  #  "https://www.bonafide55.ru",
-#]
-# Настройки для CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # Адрес нашего будущего React-приложения
-    "http://127.0.0.1:3000",
-]
+# --- 2. КЛЮЧЕВОЕ ИЗМЕНЕНИЕ ДЛЯ CORS ---
+# Логика аналогична ALLOWED_HOSTS. По умолчанию - локальная разработка.
+# На сервере вы укажете: CORS_ALLOWED_ORIGINS_STR="https://bonafide55.ru,https://www.bonafide55.ru"
+cors_origins_str = os.environ.get('CORS_ALLOWED_ORIGINS_STR', 'http://localhost:3000,http://127.0.0.1:3000')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',')]
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -93,7 +83,18 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # так и на сервере с PostgreSQL (когда переменные будут в .env файле)
 if 'DATABASE_URL' in os.environ:
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600, ssl_require=False) # Убедитесь, что ssl_require=False
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=False)
+    }
+elif all(key in os.environ for key in ['SQL_DATABASE', 'SQL_USER', 'SQL_PASSWORD', 'SQL_HOST', 'SQL_PORT']):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('SQL_DATABASE'),
+            'USER': os.environ.get('SQL_USER'),
+            'PASSWORD': os.environ.get('SQL_PASSWORD'),
+            'HOST': os.environ.get('SQL_HOST'),
+            'PORT': os.environ.get('SQL_PORT'),
+        }
     }
 else:
     DATABASES = {
@@ -104,6 +105,59 @@ else:
     }
 
 
+# --- КОНФИГУРАЦИЯ ДЛЯ DJANGO-CKEDITOR-5 ---
+CKEDITOR_5_UPLOAD_PATH = "uploads/"
+# Настройки для разных видов редакторов. Мы создадим одну конфигурацию 'default'.
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        # Язык интерфейса редактора
+        'language': 'ru',
+        # Конфигурация панели инструментов
+        'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'],
+    },
+    'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|',
+            'bulletedList', 'numberedList',
+            '|',
+            'blockQuote',
+        ],
+        'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
+        'code','subscript', 'superscript', 'highlight', '|', 'codeBlock', 'sourceEditing', 'insertImage',
+                    'bulletedList', 'numberedList', 'todoList', '|',  'blockQuote', 'imageUpload', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
+                    'insertTable',],
+        'table': {
+            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells',
+            'tableProperties', 'tableCellProperties' ],
+            'tableProperties': {
+                'borderColors': 'custom',
+                'backgroundColors': 'custom'
+            },
+            'tableCellProperties': {
+                'borderColors': 'custom',
+                'backgroundColors': 'custom'
+            }
+        },
+        'heading' : {
+            'options': [
+                { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
+                { 'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1' },
+                { 'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2' },
+                { 'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3' }
+            ]
+        }
+    },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        }
+    }
+}
+
 # Остальная часть файла идеальна, ничего не меняем
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -112,12 +166,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'ru-ru'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/django-static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'

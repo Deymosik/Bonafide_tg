@@ -1,6 +1,5 @@
 // frontend/src/pages/SearchPage.js
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import apiClient from '../api';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';

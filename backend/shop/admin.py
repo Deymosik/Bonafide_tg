@@ -27,23 +27,23 @@ class ShopImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'is_active', 'is_deal_of_the_day')
-    list_filter = ('category', 'is_active', 'info_panels', 'color_group', 'is_deal_of_the_day')
+    list_display = ('name', 'category', 'regular_price', 'is_active', 'display_deal_status')
+    list_filter = ('category', 'is_active', 'info_panels', 'color_group')
     search_fields = ('name', 'description')
     inlines = [ProductImageInline, ProductInfoCardInline]
-    list_editable = ('is_active', 'is_deal_of_the_day')
+    list_editable = ('is_active',)
 
 
     # --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
     # Мы объединяем две последние секции в одну и убираем дубликат 'info_panels'.
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'color_group', 'category', 'price', 'description', 'is_active')
+            'fields': ('name', 'color_group', 'category', 'regular_price', 'description', 'is_active')
         }),
         # --- НОВАЯ СЕКЦИЯ ДЛЯ АКЦИИ ---
         ("Акция 'Товар дня'", {
             'classes': ('collapse',), # Делаем секцию сворачиваемой
-            'fields': ('is_deal_of_the_day', 'deal_ends_at', 'deal_price')
+            'fields': ('deal_ends_at', 'deal_price')
         }),
         ('Медиафайлы', {
             'fields': ('main_image', 'audio_sample')
@@ -58,6 +58,11 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     filter_horizontal = ('related_products', 'info_panels',)
+
+    # 3. ИЗМЕНЕНИЕ: Новый метод для красивого отображения статуса в списке
+    @admin.display(description='Товар дня?', boolean=True)
+    def display_deal_status(self, obj):
+        return obj.is_deal_of_the_day
 
     actions = ['make_active', 'make_inactive']
     def make_active(self, request, queryset):

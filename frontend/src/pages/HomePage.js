@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 import CategoryBar from '../components/CategoryBar';
 import PromoCarousel from '../components/PromoCarousel';

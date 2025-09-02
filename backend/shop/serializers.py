@@ -6,6 +6,19 @@ from .models import (
 )
 
 
+# --- 1. НОВЫЙ БАЗОВЫЙ КЛАСС ДЛЯ РЕФАКТОРИНГА ---
+class ImageUrlBuilderSerializer(serializers.ModelSerializer):
+    """
+    Базовый сериализатор, который умеет строить абсолютные URL для полей с файлами.
+    """
+    def _get_absolute_url(self, file_field):
+        """Вспомогательный метод для получения полного URL."""
+        request = self.context.get('request')
+        if request and file_field and hasattr(file_field, 'url'):
+            return request.build_absolute_uri(file_field.url)
+        return None
+
+
 # --- Вспомогательные сериализаторы ---
 
 class InfoPanelSerializer(serializers.ModelSerializer):
@@ -26,7 +39,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 # Сериализатор для дополнительных фото товара (в слайдере)
-class ProductImageSerializer(serializers.ModelSerializer):
+class ProductImageSerializer(ImageUrlBuilderSerializer):
     image_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
 
@@ -35,39 +48,37 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ('image_url', 'thumbnail_url')
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image.url) if obj.image else None
+        return self._get_absolute_url(obj.image)
 
     def get_thumbnail_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image_thumbnail.url) if hasattr(obj, 'image_thumbnail') and obj.image_thumbnail else None
+        return self._get_absolute_url(obj.image_thumbnail)
 
 # Сериализатор для инфо-карточек (фич)
-class ProductInfoCardSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField(method_name='get_thumbnail_url') # Используем thumbnail для отображения
+class ProductInfoCardSerializer(ImageUrlBuilderSerializer):
+    # Используем thumbnail для отображения
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductInfoCard
         fields = ('title', 'image_url', 'link_url')
 
-    def get_thumbnail_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image_thumbnail.url) if hasattr(obj, 'image_thumbnail') and obj.image_thumbnail else None
+    def get_image_url(self, obj):
+        return self._get_absolute_url(obj.image_thumbnail)
 
 # Сериализатор для промо-баннеров (сторис)
-class PromoBannerSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField(method_name='get_thumbnail_url') # Используем thumbnail
+class PromoBannerSerializer(ImageUrlBuilderSerializer):
+    # Используем thumbnail
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = PromoBanner
         fields = ('id', 'image_url', 'link_url', 'text_content', 'text_color')
 
-    def get_thumbnail_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image_thumbnail.url) if hasattr(obj, 'image_thumbnail') and obj.image_thumbnail else None
+    def get_image_url(self, obj):
+        return self._get_absolute_url(obj.image_thumbnail)
 
 # Сериализатор для фото магазина на странице FAQ
-class ShopImageSerializer(serializers.ModelSerializer):
+class ShopImageSerializer(ImageUrlBuilderSerializer):
     image_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
 
@@ -76,12 +87,10 @@ class ShopImageSerializer(serializers.ModelSerializer):
         fields = ('image_url', 'thumbnail_url', 'caption')
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image.url) if obj.image else None
+        return self._get_absolute_url(obj.image)
 
     def get_thumbnail_url(self, obj):
-        request = self.context.get('request')
-        return request.build_absolute_uri(obj.image_thumbnail.url) if hasattr(obj, 'image_thumbnail') and obj.image_thumbnail else None
+        return self._get_absolute_url(obj.image_thumbnail)
 
 
 # --- Основные сериализаторы ---
@@ -89,8 +98,11 @@ class ShopImageSerializer(serializers.ModelSerializer):
 # Сериализатор для превью в списке товаров
 class ProductListSerializer(serializers.ModelSerializer):
     info_panels = InfoPanelSerializer(many=True, read_only=True)
-    # Отдаем только превью для быстрой загрузки
     main_image_thumbnail_url = serializers.SerializerMethodField()
+
+    # ИЗМЕНЕНИЕ 1: 'price' теперь всегда актуальная цена (обычная или акционная)
+    # Мы используем свойство current_price, которое создали в модели
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, source='current_price', read_only=True)
 
     class Meta:
         model = Product
@@ -118,20 +130,24 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     info_cards = ProductInfoCardSerializer(many=True, read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
-
-    # Отдаем и оригинал, и превью для главной картинки
     main_image_url = serializers.SerializerMethodField()
     main_image_thumbnail_url = serializers.SerializerMethodField()
-
     audio_sample = serializers.SerializerMethodField()
     functionality = serializers.JSONField()
     characteristics = serializers.JSONField()
     color_variations = serializers.SerializerMethodField()
 
+    # ИЗМЕНЕНИЕ 2: 'price' также становится актуальной ценой
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, source='current_price', read_only=True)
+
     class Meta:
         model = Product
         fields = (
-            'id', 'name', 'description', 'price', 'main_image_url', 'main_image_thumbnail_url',
+            'id', 'name', 'description',
+            'price', # Актуальная цена для покупки
+            'regular_price', # Обычная цена (для зачеркивания)
+            'deal_price', # Акционная цена
+            'main_image_url', 'main_image_thumbnail_url',
             'images', 'audio_sample', 'info_panels', 'info_cards', 'functionality',
             'characteristics', 'related_products', 'color_variations'
         )
@@ -187,19 +203,21 @@ class FaqItemSerializer(serializers.ModelSerializer):
         fields = ('id', 'question', 'answer')
 
 class DealOfTheDaySerializer(serializers.ModelSerializer):
-    # Берем поле с превью из ProductListSerializer
     main_image_thumbnail_url = serializers.SerializerMethodField()
+
+    # ИЗМЕНЕНИЕ 3: Поле 'price' теперь явно указывает на 'regular_price',
+    # чтобы фронтенд мог показать "старую" цену.
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, source='regular_price', read_only=True)
 
     class Meta:
         model = Product
-        # Включаем все поля, которые нужны компоненту DealOfTheDay.js
         fields = (
             'id',
             'name',
-            'price',
+            'price', # <- Теперь это regular_price
             'deal_price',
             'main_image_thumbnail_url',
-            'deal_ends_at' # <-- САМОЕ ВАЖНОЕ: добавляем поле с датой
+            'deal_ends_at'
         )
 
     def get_main_image_thumbnail_url(self, obj):

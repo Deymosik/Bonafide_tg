@@ -1,6 +1,7 @@
 # backend/shop/views.py
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import Prefetch
 from decimal import Decimal
 
 from rest_framework import generics, filters
@@ -83,10 +84,15 @@ class ProductListView(generics.ListAPIView):
         filters.SearchFilter
     ]
     search_fields = ['name', 'description']
-    ordering_fields = ['created_at', 'price']
+    # ИЗМЕНЕНИЕ 1: Сортировка по 'price' теперь будет сортировать по 'regular_price'.
+    # Это предсказуемо и не требует сложных запросов к БД.
+    ordering_fields = ['created_at', 'regular_price']
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
+        queryset = Product.objects.filter(is_active=True)\
+            .select_related('category')\
+            .prefetch_related('info_panels')\
+            .order_by('-created_at')
 
         product_ids_str = self.request.query_params.getlist('ids')
         if product_ids_str:
@@ -118,8 +124,36 @@ class ProductListView(generics.ListAPIView):
 
 
 class ProductDetailView(generics.RetrieveAPIView):
-    queryset = Product.objects.filter(is_active=True)
+    # 3. ОПТИМИЗАЦИЯ: Заменяем атрибут queryset на метод get_queryset для сложного запроса.
     serializer_class = ProductDetailSerializer
+
+    def get_queryset(self):
+        """
+        Создаем максимально оптимизированный запрос, который "жадно" загружает
+        все необходимые связанные данные для детальной страницы товара.
+        """
+        # Создаем специальный Prefetch для сопутствующих товаров,
+        # чтобы для них тоже сразу подгружались инфо-панельки.
+        # Это предотвращает N+1 запросы внутри сериализатора сопутствующих товаров.
+        related_products_prefetch = Prefetch(
+            'related_products',
+            queryset=Product.objects.filter(is_active=True).prefetch_related('info_panels')
+        )
+
+        return Product.objects.filter(is_active=True).select_related(
+            'category',       # Загружаем категорию (связь один-ко-многим)
+            'color_group'     # Загружаем группу цветов
+        ).prefetch_related(
+            'info_panels',    # Загружаем все инфо-панели (многие-ко-многим)
+            'images',         # Загружаем все доп. изображения
+            'info_cards',     # Загружаем все инфо-карточки
+            related_products_prefetch, # Используем наш специальный prefetch
+            Prefetch(
+                'color_group__products', # Загружаем все товары из той же группы цветов
+                queryset=Product.objects.filter(is_active=True),
+                to_attr='color_variations_prefetched' # Сохраняем результат в отдельный атрибут
+            )
+        )
 
 
 class CalculateCartView(APIView):
@@ -132,17 +166,30 @@ class CalculateCartView(APIView):
         product_quantities = {}
         category_quantities = {}
         product_ids = [item['id'] for item in cart_items]
-        products_in_cart = Product.objects.in_bulk(product_ids)
+
+        # --- ИЗМЕНЕНИЕ 1: Оптимизируем загрузку товаров вместе с их категориями ---
+        # Вместо .in_bulk() мы загружаем товары и сразу их категории,
+        # чтобы избежать лишних запросов к БД внутри цикла.
+        products_from_db = Product.objects.filter(id__in=product_ids).select_related('category')
+        products_in_cart = {product.id: product for product in products_from_db}
+
         for item in cart_items:
             product = products_in_cart.get(item['id'])
             if not product: continue
-            price = product.price
+
+            price = product.current_price
             quantity = item['quantity']
             subtotal += price * quantity
             total_quantity += quantity
             product_quantities[product.id] = quantity
-            cat_id = product.category_id
-            category_quantities[cat_id] = category_quantities.get(cat_id, 0) + quantity
+
+            # --- ИЗМЕНЕНИЕ 2: Новая логика подсчета количества по категориям ---
+            # Мы будем учитывать не только прямую категорию товара, но и всех ее "родителей".
+            current_category = product.category
+            while current_category is not None:
+                category_quantities[current_category.id] = category_quantities.get(current_category.id, 0) + quantity
+                # Переходим к родительской категории
+                current_category = current_category.parent
         best_discount_amount = Decimal('0')
         applied_rule = None
         active_rules = DiscountRule.objects.filter(is_active=True).select_related('product_target', 'category_target')
@@ -207,11 +254,14 @@ class FaqListView(generics.ListAPIView):
 
 class DealOfTheDayView(generics.RetrieveAPIView):
     serializer_class = DealOfTheDaySerializer
+
     def get_object(self):
         now = timezone.now()
+        # ИЗМЕНЕНИЕ: Запрос теперь напрямую проверяет цену и дату,
+        # а не удаленное поле is_deal_of_the_day.
         deal_product = Product.objects.filter(
             is_active=True,
-            is_deal_of_the_day=True,
-            deal_ends_at__gt=now
+            deal_price__isnull=False,  # Проверяем, что акционная цена задана
+            deal_ends_at__gt=now       # Проверяем, что срок акции не истек
         ).order_by('deal_ends_at').first()
         return deal_product

@@ -1,0 +1,71 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  # Сервис базы данных PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: bonafide_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - bonafide_network
+    healthcheck:
+      # --- ИЗМЕНЕНИЕ 2: Используем новые, правильные переменные ---
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Сервис бэкенда (Django + Gunicorn)
+  backend:
+    build: ./backend
+    container_name: bonafide_backend
+    volumes:
+      - staticfiles_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - 8000
+    env_file:
+      - ./.env
+    # Теперь backend будет ждать, пока db не станет "healthy".
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bonafide_network
+
+  # Сервис веб-сервера (Nginx + React)
+  nginx:
+    build: ./frontend
+    container_name: bonafide_nginx
+    volumes:
+      # --- ВОТ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ ---
+      # Мы монтируем наш локальный nginx.conf напрямую в контейнер
+      - ./nginx:/etc/nginx/conf.d
+      - staticfiles_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks: # <--- 3. ДОБАВИТЬ ЭТОТ БЛОК
+      - bonafide_network
+
+volumes:
+  postgres_data:
+  staticfiles_volume:
+  media_volume:
+
+
+networks:
+  bonafide_network:
+    driver: bridge

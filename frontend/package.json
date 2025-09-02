@@ -10,10 +10,9 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.10.0",
     "jwt-decode": "^4.0.0",
-    "lottie-react": "^2.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.3",
+    "react-router-dom": "^6.25.1",
     "react-scripts": "5.0.1",
     "swiper": "^11.2.10",
     "web-vitals": "^2.1.4",
@@ -42,5 +41,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "identity-obj-proxy": "^3.0.0"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)/"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|scss)$": "identity-obj-proxy"
+    }
   }
 }

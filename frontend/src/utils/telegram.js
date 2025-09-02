@@ -1,6 +1,7 @@
 // frontend/src/utils/telegram.js
 
-const tg = window.Telegram.WebApp;
+// 1. ИЗМЕНЕНИЕ: Добавляем проверку на существование window.Telegram
+const tg = window.Telegram ? window.Telegram.WebApp : undefined;
 
 const tgMock = {
     ready: () => console.log('Mock TG: ready'),
@@ -36,5 +37,5 @@ const tgMock = {
 
 export const useTelegram = () => {
     // Включаем заглушку, если tg объекта нет (например, в обычном браузере)
-    return tg ? tg : tgMock;
+    return tg || tgMock;
 };
