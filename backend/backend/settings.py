@@ -19,6 +19,26 @@ DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 allowed_hosts_str = os.environ.get('ALLOWED_HOSTS_STR', '127.0.0.1,localhost')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',')]
 
+if not DEBUG:
+    # Говорим Django, что он находится за прокси, и доверять заголовку X-Forwarded-Proto,
+    # который Nginx отправляет, чтобы указать, что исходное соединение было по HTTPS.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Говорим Django использовать заголовок X-Forwarded-Host
+    USE_X_FORWARDED_HOST = True
+
+    # Требуем, чтобы все сессионные cookie отправлялись с флагом 'Secure'
+    # (только по HTTPS).
+    SESSION_COOKIE_SECURE = True
+
+    # Требуем, чтобы все CSRF cookie отправлялись с флагом 'Secure'.
+    CSRF_COOKIE_SECURE = True
+
+    # Указываем Django, какие HTTPS-источники (origins) являются доверенными
+    # для "небезопасных" запросов (POST, PUT, DELETE).
+    # Это главная настройка, которая исправляет ошибку CSRF.
+    CSRF_TRUSTED_ORIGINS = ['https://bf55.ru', 'https://www.bf55.ru']
+
 # INSTALLED_APPS и MIDDLEWARE остаются без изменений
 INSTALLED_APPS = [
     'django.contrib.admin',
