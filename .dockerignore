@@ -1,0 +1,23 @@
+# Локальные файлы Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Виртуальное окружение
+.venv
+venv
+env
+
+# Локальная база данных
+db.sqlite3
+
+# Системные файлы macOS
+.DS_Store
+
+# Папка с зависимостями фронтенда, она не нужна в финальном образе
+frontend/node_modules
+
+# Файлы Git
+.git
+.gitignore

@@ -1,0 +1,18 @@
+# backend/.dockerignore
+
+# Исключаем виртуальное окружение
+venv/
+env/
+
+# Исключаем файлы IDE и кеш Python
+.idea/
+__pycache__/
+*.pyc
+
+# Исключаем локальную базу данных SQLite, если она есть
+db.sqlite3
+*.sqlite3
+
+# Исключаем Git
+.git
+.gitignore

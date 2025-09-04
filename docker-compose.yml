@@ -1,4 +1,4 @@
-# docker-compose.yml - ФИНАЛЬНАЯ ВЕРСЯ
+# docker-compose.yml - ФИНАЛЬНАЯ ЭТАЛОННАЯ ВЕРСИЯ
 
 services:
   db:
@@ -21,8 +21,6 @@ services:
     build: ./backend
     container_name: bonafide_backend
     volumes:
-      # --- ИЗМЕНЕНИЕ 1 ---
-      # Теперь мы используем именованные тома
       - staticfiles_volume:/app/staticfiles
       - media_volume:/app/media
     expose:
@@ -41,11 +39,10 @@ services:
     container_name: bonafide_nginx
     volumes:
       - ./nginx:/etc/nginx/conf.d
-      # --- ИЗМЕНЕНИЕ 2 ---
-      # Подключаем ТЕ ЖЕ САМЫЕ именованные тома для чтения
       - staticfiles_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot
     ports:
       - "80:80"
       - "443:443"
@@ -55,8 +52,6 @@ services:
     networks:
       - bonafide_network
 
-# --- ИЗМЕНЕНИЕ 3 ---
-# Переименовываем тома для ясности
 volumes:
   postgres_data:
   staticfiles_volume:

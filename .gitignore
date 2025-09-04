@@ -5,12 +5,10 @@
 # Виртуальное окружение
 /backend/venv/
 
-# Docker
-Dockerfile
-.dockerignore
-
 # Файлы с переменными окружения (СЕКРЕТЫ!)
 /backend/.env
+
+.env/
 
 # Кэш Python
 /backend/__pycache__/
