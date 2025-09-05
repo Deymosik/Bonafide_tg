@@ -7,7 +7,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Эти переменные Telegram Web Apps API подставит автоматически */
-    background-color: var(--tg-theme-bg-color, #ffffff);
+ /*   background-color: var(--tg-theme-bg-color, #ffffff); */
     color: var(--tg-theme-text-color, #000000);
 }
 

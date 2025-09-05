@@ -61,7 +61,7 @@
     font-size: 16px;
     font-weight: 500;
     color: var(--tg-theme-hint-color);
-    margin: 0 0_12px 0;
+    margin: 0 0 12px 0;
 }
 
 .deal-countdown {
@@ -96,25 +96,6 @@
 
 /* --- МЕДИА-ЗАПРОСЫ ДЛЯ АДАПТИВНОСТИ --- */
 
-/* Стили для ОЧЕНЬ узких экранов (меньше 360px, например, iPhone SE 1st gen) */
-@media (max-width: 359px) {
-    .deal-info {
-        padding: 12px; /* Уменьшаем боковые отступы */
-    }
-
-    .deal-countdown {
-        gap: 4px; /* Уменьшаем расстояние между элементами таймера */
-    }
-
-    .countdown-item {
-        padding: 4px; /* Уменьшаем внутренние отступы */
-    }
-
-    .countdown-value {
-        font-size: 16px; /* Слегка уменьшаем шрифт цифр */
-    }
-}
-
 /* На экранах шире 380px возвращаем горизонтальный вид */
 @media (min-width: 380px) {
     .deal-container {
@@ -129,7 +110,7 @@
 
 /* Стили для вертикального вида на самых маленьких экранах (менее 320px) */
 /* Это крайний случай, но он защитит от "ломания" верстки */
-@media (max-width: 319px) {
+@media (max-width: 380px) {
     .deal-container {
         flex-direction: column;
     }
