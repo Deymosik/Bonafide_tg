@@ -5,7 +5,7 @@
     flex-direction: row;
     background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
     border-radius: 16px;
-    margin: 12px 12px 0px 12px;
+    margin: 12px 12px 0 12px;
     text-decoration: none;
     color: var(--tg-theme-text-color);
     overflow: hidden;
