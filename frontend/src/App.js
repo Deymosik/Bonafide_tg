@@ -16,7 +16,17 @@ import './App.css';
 function App() {
     const tg = useTelegram();
     const { notification } = useNotification();
-    useEffect(() => { tg.ready(); }, [tg]);
+    useEffect(() => {
+        // Проверяем, что объект tg вообще существует (т.е. мы внутри Telegram)
+        if (tg) {
+            // Сообщаем Telegram, что приложение готово к отображению
+            tg.ready();
+
+            // --- ВОТ ИЗМЕНЕНИЕ ---
+            // Отключаем жест вертикального свайпа для закрытия приложения
+            tg.isVerticalSwipeEnabled = false;
+        }
+    }, [tg]); // Зависимость от [tg] гарантирует, что код выполнится один раз, когда tg станет доступен
 
     return (
         <BrowserRouter>
