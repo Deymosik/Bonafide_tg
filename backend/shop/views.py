@@ -81,26 +81,40 @@ class ProductListView(generics.ListAPIView):
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
-        filters.SearchFilter
+        filters.SearchFilter,
     ]
     search_fields = ['name', 'description']
-    # ИЗМЕНЕНИЕ 1: Сортировка по 'price' теперь будет сортировать по 'regular_price'.
-    # Это предсказуемо и не требует сложных запросов к БД.
-    ordering_fields = ['created_at', 'regular_price']
+
+    # 1. РАЗРЕШАЕМ СОРТИРОВКУ ПО 'price'
+    # Фронтенд уже отправляет 'price', так что теперь все будет совпадать.
+    ordering_fields = ['created_at', 'price']
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True)\
+        # 2. СОЗДАЕМ БАЗОВЫЙ QUERYSET
+        # Здесь мы выбираем только активные товары и подгружаем связанные данные.
+        base_queryset = Product.objects.filter(is_active=True)\
             .select_related('category')\
-            .prefetch_related('info_panels')\
-            .order_by('-created_at')
+            .prefetch_related('info_panels')
 
+        # 3. АННОТИРУЕМ QUERYSET АКТУАЛЬНОЙ ЦЕНОЙ
+        # Используем метод, который мы добавили в модель Product.
+        # Теперь у каждого товара есть "виртуальное" поле 'price',
+        # по которому OrderingFilter сможет работать.
+        queryset_with_price = Product.annotate_with_price(base_queryset)
+
+        # --- Далее идет ВАША СУЩЕСТВУЮЩАЯ ЛОГИКА ФИЛЬТРАЦИИ, ---
+        # --- но теперь она применяется к новому queryset_with_price. ---
+
+        # Фильтрация по конкретным ID (если переданы)
         product_ids_str = self.request.query_params.getlist('ids')
         if product_ids_str:
             product_ids = [int(pid) for pid in product_ids_str if pid.isdigit()]
             if product_ids:
-                queryset = queryset.filter(id__in=product_ids)
-                return queryset
+                # ВАЖНО: фильтруем queryset_with_price
+                queryset_with_price = queryset_with_price.filter(id__in=product_ids)
+                return queryset_with_price
 
+        # Фильтрация по категории
         category_id = self.request.query_params.get('category')
         if category_id:
             try:
@@ -113,15 +127,18 @@ class ProductListView(generics.ListAPIView):
                         children_ids.extend(get_all_children_ids(child))
                     return children_ids
                 categories_ids_to_filter = [category.id] + get_all_children_ids(category)
-                queryset = queryset.filter(category__id__in=categories_ids_to_filter)
+                # ВАЖНО: фильтруем queryset_with_price
+                queryset_with_price = queryset_with_price.filter(category__id__in=categories_ids_to_filter)
             except Category.DoesNotExist:
                 return Product.objects.none()
 
+        # 4. ВАЖНАЯ ЧАСТЬ: ПРИМЕНЯЕМ СОРТИРОВКУ И ПОИСК
+        # Мы убрали эту логику из вашего кода, но она должна быть здесь.
+        # DRF filter_backends должны применяться к финальному queryset.
         for backend in list(self.filter_backends):
-            queryset = backend().filter_queryset(self.request, queryset, self)
+             queryset_with_price = backend().filter_queryset(self.request, queryset_with_price, self)
 
-        return queryset
-
+        return queryset_with_price
 
 class ProductDetailView(generics.RetrieveAPIView):
     # 3. ОПТИМИЗАЦИЯ: Заменяем атрибут queryset на метод get_queryset для сложного запроса.

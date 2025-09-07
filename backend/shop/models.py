@@ -2,6 +2,7 @@
 from django.db import models
 from django.utils import timezone
 from django_ckeditor_5.fields import CKEditor5Field
+from django.db.models import Case, When, F, DecimalField
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 
@@ -119,6 +120,31 @@ class Product(models.Model):
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
         ordering = ['-created_at']
+
+    @classmethod
+    def annotate_with_price(cls, queryset):
+        """
+        Аннотирует queryset новым полем 'price', которое содержит
+        актуальную цену (акционную или обычную).
+        """
+        now = timezone.now()
+
+        # Условие, при котором акция "Товар дня" активна
+        deal_active_condition = models.Q(
+            deal_price__isnull=False,
+            deal_ends_at__gt=now
+        )
+
+        # Создаем "виртуальное" поле 'price'
+        # Если акция активна -> берем deal_price
+        # Иначе -> берем regular_price
+        price_annotation = Case(
+            When(deal_active_condition, then=F('deal_price')),
+            default=F('regular_price'),
+            output_field=DecimalField()
+        )
+
+        return queryset.annotate(price=price_annotation)
 
 # --- Модель ProductImage (С ИЗМЕНЕНИЯМИ) ---
 class ProductImage(models.Model):
