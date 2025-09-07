@@ -35,8 +35,8 @@
 }
 
 .shipping-icon-wrapper svg {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     fill: var(--tg-theme-text-color, #333);
 }
 

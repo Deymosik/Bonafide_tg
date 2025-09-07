@@ -1,2 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><title>ionicons-v5-a</title><polyline points="244 400 100 256 244 112" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:48px"/><line x1="120" y1="256" x2="412" y2="256" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:48px"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The Best Svg Icon site in the world: iconSvg.co, Visit us! https://iconsvg.co -->
+<svg id="svg" fill="#000000" stroke="#000000" width="200px" height="200px" version="1.1" viewBox="144 144 512 512" xmlns="http://www.w3.org/2000/svg">
+    <g id="IconSvg_bgCarrier" stroke-width="0"></g>
+    <g id="IconSvg_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC"></g>
+    <g id="IconSvg_iconCarrier">
+        <defs xmlns="http://www.w3.org/2000/svg">
+            <clipPath id="a">
+                <path d="m148.09 160h503.81v480h-503.81z"/>
+            </clipPath>
+        </defs>
+        <g xmlns="http://www.w3.org/2000/svg" clip-path="url(#a)">
+            <path d="m172.11 423.96c-6.3242 0-11.711-2.2617-15.773-5.8359l-1.1914-1.1914c-0.91406-0.91016-1.7305-1.8633-2.457-2.8438-1.4688-2.0469-2.6133-4.3125-3.3945-6.6953-0.88672-2.5508-1.2422-5-1.2227-7.4258-0.019531-2.4219 0.33594-4.8711 1.0938-7.25 0.91016-2.5586 2.0547-4.8203 3.5234-6.8672 0.72656-0.98047 1.543-1.9336 2.457-2.8438l1.1914-1.1914c4.0625-3.5742 9.4492-5.8359 15.773-5.8359h455.83c31.988 0 31.988 47.98 0 47.98h-455.83l16.965-40.953 40.953 40.953zm-15.773-42.145c4.0625-3.5742 9.4492-5.8359 15.773-5.8359h455.83c31.988 0 31.988 47.98 0 47.98h-455.83l16.965-40.953 215.92 215.92c9.3672 9.3672 9.3672 24.559 0 33.926-9.3711 9.3711-24.559 9.3711-33.93 0l-214.73-214.73c-1.375-1.207-2.5938-2.5664-3.6484-4.0352-1.6055-2.168-2.7695-4.4844-3.5234-6.8672-0.65625-2.2148-1.0742-4.7227-1.0938-7.2539 0.019532-2.5273 0.4375-5.0352 1.2227-7.4219 0.625-2.2109 1.7891-4.5273 3.3945-6.6953 1.0547-1.4688 2.2734-2.8281 3.6484-4.0352l214.73-214.73c9.3711-9.3711 24.559-9.3711 33.93 0 9.3672 9.3672 9.3672 24.559 0 33.926l-215.92 215.92-16.965-40.953h455.83v47.98z"/>
+        </g>
+
+    </g>
+</svg>
