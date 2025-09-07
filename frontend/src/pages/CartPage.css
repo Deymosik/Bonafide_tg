@@ -79,7 +79,7 @@
 .clear-cart-btn svg {
     width: 20px;
     height: 20px;
-    fill: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    fill: var(--tg-theme-hint-color, #333);
 }
 
 /* --- СПИСОК ТОВАРОВ (ОБНОВЛЕННЫЙ) --- */
