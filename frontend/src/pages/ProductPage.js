@@ -8,6 +8,7 @@ import { useTelegram } from '../utils/telegram';
 import RelatedProductCard from '../components/RelatedProductCard';
 import { useCart } from '../context/CartContext';
 import ProductPageSkeleton from '../components/ProductPageSkeleton';
+import AccordionItem from '../components/AccordionItem';
 import './ProductPage.css';
 
 const ProductPage = () => {
@@ -21,7 +22,7 @@ const ProductPage = () => {
     const [isSwitchingColor, setIsSwitchingColor] = useState(false);
 
     // Эта строка остается без изменений
-    const itemInCart = cartItems.find(item => item && product && item.id === product.id);
+    const itemInCart = cartItems.find(item => item && product && item.product.id === product.id);
 
     // Эта функция остается без изменений
     const fetchProductData = useCallback((id, isInitialLoad) => {
@@ -211,27 +212,32 @@ const ProductPage = () => {
                     </div>
                 )}
 
-                {product.functionality && Object.keys(product.functionality).length > 0 && (
-                    <div className="product-section">
-                        <h2>Функционал</h2>
-                        <ul className="spec-list">
-                            {Object.entries(product.functionality).map(([key, value]) => (
-                                <li key={key}><strong>{key}:</strong> {value}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                <div className="product-section">
+                    {product.features && product.features.length > 0 && (
+                        <AccordionItem title="Функционал">
+                            <ul className="spec-list simple">
+                                {product.features.map((feature, index) => (
+                                    <li key={index}>{feature.name}</li>
+                                ))}
+                            </ul>
+                        </AccordionItem>
+                    )}
 
-                {product.characteristics && Object.keys(product.characteristics).length > 0 && (
-                    <div className="product-section">
-                        <h2>Технические характеристики</h2>
-                        <ul className="spec-list">
-                            {Object.entries(product.characteristics).map(([key, value]) => (
-                                <li key={key}><strong>{key}:</strong> {value}</li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                    {product.grouped_characteristics && product.grouped_characteristics.length > 0 && (
+                        product.grouped_characteristics.map((category, index) => (
+                            <AccordionItem title={category.name} key={index}>
+                                <ul className="spec-list">
+                                    {category.characteristics.map((char, charIndex) => (
+                                        <li key={charIndex}>
+                                            <span className="spec-name">{char.name}</span>
+                                            <span className="spec-value">{char.value}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </AccordionItem>
+                        ))
+                    )}
+                </div>
             </div>
 
             <div className="sticky-footer">
@@ -239,9 +245,13 @@ const ProductPage = () => {
                     <div className="cart-controls-container">
                         <Link to="/cart" className="go-to-cart-btn">В корзине</Link>
                         <div className="quantity-stepper">
-                            <button className="quantity-btn" onClick={() => handleQuantityChange(itemInCart.quantity - 1)}>−</button>
+                            <button className="quantity-btn"
+                                    onClick={() => handleQuantityChange(itemInCart.quantity - 1)}>−
+                            </button>
                             <span className="quantity-display">{itemInCart.quantity}</span>
-                            <button className="quantity-btn" onClick={() => handleQuantityChange(itemInCart.quantity + 1)}>+</button>
+                            <button className="quantity-btn"
+                                    onClick={() => handleQuantityChange(itemInCart.quantity + 1)}>+
+                            </button>
                         </div>
                     </div>
                 ) : (

@@ -9,7 +9,6 @@ const FreeShippingProgressBar = ({ currentAmount, threshold }) => {
     const [isGoalReached, setIsGoalReached] = useState(false);
 
     const isThresholdSet = threshold && threshold > 0;
-    const isBelowThreshold = isThresholdSet && currentAmount < threshold;
 
     useEffect(() => {
         // Если порог достигнут, обновляем состояние

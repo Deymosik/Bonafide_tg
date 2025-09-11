@@ -2,9 +2,31 @@
 from rest_framework import serializers
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner,
-    ProductInfoCard, ColorGroup, ShopSettings, FaqItem, ShopImage
+    ProductInfoCard, ColorGroup, ShopSettings, FaqItem, ShopImage,
+    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem
 )
 
+
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ('name',)
+
+class ProductCharacteristicSerializer(serializers.ModelSerializer):
+    # Получаем строковое представление характеристики (например, "Вес")
+    name = serializers.CharField(source='characteristic.name')
+
+    class Meta:
+        model = ProductCharacteristic
+        fields = ('name', 'value')
+
+class CharacteristicCategorySerializer(serializers.ModelSerializer):
+    # Вкладываем все характеристики, относящиеся к этой категории
+    characteristics = ProductCharacteristicSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CharacteristicCategory
+        fields = ('name', 'characteristics')
 
 # --- 1. НОВЫЙ БАЗОВЫЙ КЛАСС ДЛЯ РЕФАКТОРИНГА ---
 class ImageUrlBuilderSerializer(serializers.ModelSerializer):
@@ -133,8 +155,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     main_image_url = serializers.SerializerMethodField()
     main_image_thumbnail_url = serializers.SerializerMethodField()
     audio_sample = serializers.SerializerMethodField()
-    functionality = serializers.JSONField()
-    characteristics = serializers.JSONField()
+    features = FeatureSerializer(many=True, read_only=True)
+    grouped_characteristics = serializers.SerializerMethodField()
     color_variations = serializers.SerializerMethodField()
 
     # ИЗМЕНЕНИЕ 2: 'price' также становится актуальной ценой
@@ -148,9 +170,33 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'regular_price', # Обычная цена (для зачеркивания)
             'deal_price', # Акционная цена
             'main_image_url', 'main_image_thumbnail_url',
-            'images', 'audio_sample', 'info_panels', 'info_cards', 'functionality',
-            'characteristics', 'related_products', 'color_variations'
+            'images', 'audio_sample', 'info_panels', 'info_cards', 'related_products',
+             'color_variations', 'features',
+            'grouped_characteristics',
+            'related_products', 'color_variations'
         )
+
+    def get_grouped_characteristics(self, obj):
+        # Получаем все характеристики товара, сразу подгружая связанные категории и названия
+        characteristics = obj.characteristics.select_related('characteristic__category').all()
+
+        # Группируем их по категориям
+        grouped_data = {}
+        for pc in characteristics:
+            category_name = pc.characteristic.category.name
+            if category_name not in grouped_data:
+                grouped_data[category_name] = []
+            grouped_data[category_name].append(
+                ProductCharacteristicSerializer(pc).data
+            )
+
+        # Преобразуем в список для сериализатора
+        # [{ 'name': 'Основные', 'characteristics': [...] }, { ... }]
+        result = [
+            {'name': cat_name, 'characteristics': items}
+            for cat_name, items in grouped_data.items()
+        ]
+        return result
 
     def get_main_image_url(self, obj):
         request = self.context.get('request')
@@ -179,7 +225,7 @@ class ShopSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopSettings
         fields = (
-            'shop_name', 'manager_username', 'contact_phone', 'about_us_section',
+            'manager_username', 'contact_phone', 'about_us_section',
             'delivery_section', 'warranty_section', 'images', 'free_shipping_threshold',
             'search_placeholder', 'search_initial_text', 'search_lottie_url', 'cart_lottie_url'
         )
@@ -225,3 +271,38 @@ class DealOfTheDaySerializer(serializers.ModelSerializer):
         if hasattr(obj, 'main_image_thumbnail') and obj.main_image_thumbnail:
             return request.build_absolute_uri(obj.main_image_thumbnail.url)
         return None
+
+class CartItemSerializer(serializers.ModelSerializer):
+    """Сериализатор для отдельного товара в корзине."""
+    # Добавляем вложенный сериализатор, чтобы получить полную информацию о товаре
+    product = ProductListSerializer(read_only=True)
+    # Поле только для записи, чтобы принимать ID товара от фронтенда
+    product_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ('id', 'product', 'product_id', 'quantity')
+        # Делаем quantity доступным и для чтения, и для записи
+        read_only_fields = ('id', 'product')
+
+
+class CartSerializer(serializers.ModelSerializer):
+    """Полный сериализатор корзины со всеми товарами."""
+    items = CartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ('id', 'telegram_id', 'items', 'updated_at')
+        read_only_fields = ('id', 'telegram_id', 'updated_at')
+
+
+class DetailedCartItemSerializer(serializers.Serializer):
+    """
+    Сериализатор для "раскрашенных" товаров из функции расчета.
+    Он не привязан к модели, а работает со словарями.
+    """
+    id = serializers.IntegerField()
+    product = ProductListSerializer()
+    quantity = serializers.IntegerField()
+    original_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    discounted_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)

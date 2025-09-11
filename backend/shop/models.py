@@ -48,6 +48,63 @@ class ColorGroup(models.Model):
         verbose_name = "Группа цветов"
         verbose_name_plural = "Группы цветов"
 
+
+class Feature(models.Model):
+    """Модель для описания Функционала (особенностей) товара."""
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='features')
+    name = models.CharField("Название особенности", max_length=200)
+    order = models.PositiveIntegerField("Порядок", default=0)
+
+    class Meta:
+        verbose_name = "Особенность (функционал)"
+        verbose_name_plural = "Особенности (функционал)"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+class CharacteristicCategory(models.Model):
+    """Категория для группировки характеристик (например, 'Основные', 'Габариты')."""
+    name = models.CharField("Название категории", max_length=100, unique=True)
+    order = models.PositiveIntegerField("Порядок", default=0)
+
+    class Meta:
+        verbose_name = "Категория характеристики"
+        verbose_name_plural = "Категории характеристик"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+class Characteristic(models.Model):
+    """Справочник всех возможных названий характеристик (Вес, Цвет, Материал)."""
+    name = models.CharField("Название характеристики", max_length=100, unique=True)
+    category = models.ForeignKey(CharacteristicCategory, on_delete=models.CASCADE, related_name='characteristics')
+
+    class Meta:
+        verbose_name = "Характеристика (справочник)"
+        verbose_name_plural = "Характеристики (справочник)"
+        ordering = ['category__order', 'name']
+
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+
+class ProductCharacteristic(models.Model):
+    """Связь конкретного товара с характеристикой и ее значением."""
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='characteristics')
+    characteristic = models.ForeignKey(Characteristic, on_delete=models.CASCADE, verbose_name="Характеристика")
+    value = models.CharField("Значение", max_length=255)
+
+    class Meta:
+        verbose_name = "Характеристика товара"
+        verbose_name_plural = "Характеристики товара"
+        ordering = ['characteristic']
+        unique_together = ('product', 'characteristic') # Одна характеристика на один товар
+
+    def __str__(self):
+        return f"{self.product.name}: {self.characteristic.name} = {self.value}"
+
+
 # --- Модель Product (С КЛЮЧЕВЫМИ ИЗМЕНЕНИЯМИ) ---
 class Product(models.Model):
     name = models.CharField("Название товара", max_length=200)
@@ -85,8 +142,7 @@ class Product(models.Model):
                                           format='WEBP',
                                           options={'quality': 85})
     audio_sample = models.FileField("Пример аудио (MP3, WAV)", upload_to='products/audio/', null=True, blank=True)
-    functionality = models.JSONField("Функционал", default=dict, blank=True, help_text="Ключевые особенности...")
-    characteristics = models.JSONField("Тех. характеристики", default=dict, blank=True, help_text="Физические и технические данные...")
+
     related_products = models.ManyToManyField('self', blank=True, symmetrical=False, verbose_name="Сопутствующие товары")
     color_group = models.ForeignKey(ColorGroup, on_delete=models.SET_NULL, related_name='products', null=True, blank=True, verbose_name="Группа цветов")
 
@@ -234,7 +290,6 @@ class DiscountRule(models.Model):
 
 # --- Модель ShopSettings (без изменений) ---
 class ShopSettings(models.Model):
-    shop_name = models.CharField("Название магазина", max_length=100, default="Мой Магазин")
     manager_username = models.CharField("Юзернейм менеджера в Telegram", max_length=100, help_text="Без @", default="username")
     contact_phone = models.CharField("Контактный телефон", max_length=20, blank=True)
     about_us_section = CKEditor5Field("Блок 'О нас'", blank=True, help_text="Краткий рассказ о магазине", config_name='default')
@@ -306,3 +361,32 @@ class ShopImage(models.Model):
         verbose_name = "Фотография магазина"
         verbose_name_plural = "Фотографии магазина"
         ordering = ['order']
+
+class Cart(models.Model):
+    """Модель корзины, привязанная к пользователю Telegram."""
+    telegram_id = models.BigIntegerField("Telegram ID пользователя", unique=True, db_index=True)
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    updated_at = models.DateTimeField("Дата обновления", auto_now=True)
+
+    def __str__(self):
+        return f"Корзина пользователя {self.telegram_id}"
+
+    class Meta:
+        verbose_name = "Корзина пользователя"
+        verbose_name_plural = "Корзины пользователей"
+
+class CartItem(models.Model):
+    """Модель товара в корзине."""
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name="Корзина")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cart_items', verbose_name="Товар")
+    quantity = models.PositiveIntegerField("Количество", default=1)
+    added_at = models.DateTimeField("Дата добавления", auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} в корзине {self.cart.telegram_id}"
+
+    class Meta:
+        verbose_name = "Товар в корзине"
+        verbose_name_plural = "Товары в корзине"
+        # Гарантируем, что один и тот же товар не будет добавлен в одну корзину дважды
+        unique_together = ('cart', 'product')

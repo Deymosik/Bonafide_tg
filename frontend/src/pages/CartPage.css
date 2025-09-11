@@ -111,7 +111,7 @@
     height: 70px;
     object-fit: cover;
     border-radius: 12px;
-    flex-shrink: 0;
+    display: block; /* Убираем лишние отступы под картинкой */
 }
 
 .cart-item-info {
@@ -282,4 +282,125 @@
 
 .shipping-options input[type="radio"] {
     display: none;
+}
+
+.cart-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+
+.cart-actions-header .select-all-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000);
+    cursor: pointer;
+}
+
+.cart-actions-header .action-buttons button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+}
+.cart-actions-header .action-buttons button svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--tg-theme-hint-color, #8e8e93);
+}
+
+/* Стилизация самого товара в корзине */
+.cart-item {
+    display: flex;
+    align-items: center;
+    /* Убираем gap, так как чекбокс теперь не в потоке */
+    /* gap: 12px; */
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    padding: 12px;
+    border-radius: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* --- НОВЫЙ КОНТЕЙНЕР ДЛЯ КАРТИНКИ И ЧЕКБОКСА --- */
+.cart-item-image-container {
+    position: relative; /* Делаем его точкой отсчета для абсолютного позиционирования */
+    flex-shrink: 0; /* Запрещаем контейнеру сжиматься */
+    margin-right: 16px; /* Добавляем отступ справа, который раньше делал gap */
+}
+
+/* Стили для кастомного чекбокса */
+.custom-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--tg-theme-hint-color, #c7c7cc);
+    background-color: var(--tg-theme-bg-color, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cart-item .custom-checkbox {
+    position: absolute; /* Вырываем чекбокс из потока документа */
+    top: -6px;        /* Сдвигаем вверх */
+    left: -6px;       /* Сдвигаем влево */
+    z-index: 1;       /* Размещаем поверх картинки */
+
+    /* Добавляем тень для лучшей читаемости, как на вашем скриншоте */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.custom-checkbox.checked {
+    background-color: var(--tg-theme-button-color, #007aff);
+    border-color: var(--tg-theme-button-color, #007aff);
+}
+
+.custom-checkbox svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--tg-theme-button-text-color, #fff);
+    stroke-width: 2.5;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox.checked svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* --- СТИЛИ ДЛЯ ЦЕН В КОРЗИНЕ --- */
+.cart-item-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.normal-price {
+    color: var(--tg-theme-text-color, #000);
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.new-price {
+    color: var(--tg-theme-destructive-text-color, #E53935); /* Красный цвет для акцента */
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.old-price {
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 14px;
+    text-decoration: line-through;
 }

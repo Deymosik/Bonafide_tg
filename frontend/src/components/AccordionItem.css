@@ -1,0 +1,125 @@
+/* frontend/src/components/AccordionItem.css - ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ */
+.accordion-item-wrapper {
+    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden; /* Это важно, чтобы контент не "вылезал" за скругленные углы */
+}
+
+.accordion-header {
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.accordion-arrow {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    transition: transform 0.3s ease;
+    transform: rotate(90deg);
+}
+
+.accordion-arrow.open {
+    transform: rotate(-90deg);
+}
+
+/* --- НОВАЯ, НАДЕЖНАЯ АНИМАЦИЯ --- */
+.accordion-answer-panel {
+    /* Скрываем контент по умолчанию, установив max-height в 0 */
+    max-height: 0;
+    overflow: hidden; /* Это КЛЮЧЕВОЕ свойство, оно обрезает "торчащий" текст */
+    transition: max-height 0.3s ease-out; /* Анимируем изменение высоты */
+}
+
+.accordion-answer-panel.open {
+    /* Для открытого состояния устанавливаем очень большую высоту.
+       Браузер сам анимирует до реальной высоты контента. */
+    max-height: 1000px; /* Достаточно для любого контента */
+    transition: max-height 0.5s ease-in;
+}
+
+/* Внутренний блок для отступов */
+.accordion-content-inner {
+    padding: 0 16px 16px 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--tg-theme-text-color, #333333);
+}
+
+/* --- Стили для списков и текста внутри, БЕЗ ИЗМЕНЕНИЙ --- */
+.accordion-content-inner p,
+.accordion-content-inner ul,
+.accordion-content-inner ol {
+    margin: 0 0 1em 0;
+}
+.accordion-content-inner p:last-child,
+.accordion-content-inner ul:last-child,
+.accordion-content-inner ol:last-child {
+    margin-bottom: 0;
+}
+.accordion-content-inner a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+}
+
+.spec-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.spec-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+.spec-list li:last-child {
+    border-bottom: none;
+}
+.spec-list.simple li {
+    justify-content: flex-start;
+}
+
+.spec-list .spec-name {
+    color: var(--tg-theme-hint-color, #8e8e93);
+    padding-right: 16px;
+}
+.spec-list .spec-value {
+    font-weight: 500;
+    text-align: right;
+}
+/* --- СТИЛИ ДЛЯ HTML-КОНТЕНТА (КАК НА СТРАНИЦЕ FAQ) --- */
+.accordion-content-inner div {
+    /* Эти стили применятся к div, который мы создали с помощью dangerouslySetInnerHTML */
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.accordion-content-inner p,
+.accordion-content-inner ul,
+.accordion-content-inner ol {
+    margin: 0 0 1em 0;
+}
+.accordion-content-inner p:last-child,
+.accordion-content-inner ul:last-child,
+.accordion-content-inner ol:last-child {
+    margin-bottom: 0;
+}
+.accordion-content-inner a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+}
+.accordion-content-inner a:hover {
+    text-decoration: underline;
+}

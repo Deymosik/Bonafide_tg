@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db.models import Prefetch
 from decimal import Decimal
 
-from rest_framework import generics, filters
+from rest_framework import generics, filters, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,15 +12,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (
     Product, Category, PromoBanner, DiscountRule,
-    ShopSettings, FaqItem
+    ShopSettings, FaqItem, Cart, CartItem
 )
 from .serializers import (
     ProductListSerializer, ProductDetailSerializer, CategorySerializer,
     PromoBannerSerializer, ShopSettingsSerializer, FaqItemSerializer,
-    DealOfTheDaySerializer
+    DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer
 )
 
 # --- Существующие классы (без изменений) ---
+
+
 
 def parse_init_data(init_data: str, bot_token: str):
     """
@@ -172,92 +174,6 @@ class ProductDetailView(generics.RetrieveAPIView):
             )
         )
 
-
-class CalculateCartView(APIView):
-    def post(self, request, *args, **kwargs):
-        cart_items = request.data.get('cartItems', [])
-        if not cart_items:
-            return Response({"error": "Cart is empty"}, status=400)
-        subtotal = Decimal('0')
-        total_quantity = 0
-        product_quantities = {}
-        category_quantities = {}
-        product_ids = [item['id'] for item in cart_items]
-
-        # --- ИЗМЕНЕНИЕ 1: Оптимизируем загрузку товаров вместе с их категориями ---
-        # Вместо .in_bulk() мы загружаем товары и сразу их категории,
-        # чтобы избежать лишних запросов к БД внутри цикла.
-        products_from_db = Product.objects.filter(id__in=product_ids).select_related('category')
-        products_in_cart = {product.id: product for product in products_from_db}
-
-        for item in cart_items:
-            product = products_in_cart.get(item['id'])
-            if not product: continue
-
-            price = product.current_price
-            quantity = item['quantity']
-            subtotal += price * quantity
-            total_quantity += quantity
-            product_quantities[product.id] = quantity
-
-            # --- ИЗМЕНЕНИЕ 2: Новая логика подсчета количества по категориям ---
-            # Мы будем учитывать не только прямую категорию товара, но и всех ее "родителей".
-            current_category = product.category
-            while current_category is not None:
-                category_quantities[current_category.id] = category_quantities.get(current_category.id, 0) + quantity
-                # Переходим к родительской категории
-                current_category = current_category.parent
-        best_discount_amount = Decimal('0')
-        applied_rule = None
-        active_rules = DiscountRule.objects.filter(is_active=True).select_related('product_target', 'category_target')
-        for rule in active_rules:
-            current_discount = Decimal('0')
-            if rule.discount_type == DiscountRule.DiscountType.TOTAL_QUANTITY and total_quantity >= rule.min_quantity:
-                current_discount = subtotal * (rule.discount_percentage / 100)
-            elif rule.discount_type == DiscountRule.DiscountType.PRODUCT_QUANTITY and rule.product_target_id in product_quantities:
-                if product_quantities[rule.product_target_id] >= rule.min_quantity:
-                    current_discount = subtotal * (rule.discount_percentage / 100)
-            elif rule.discount_type == DiscountRule.DiscountType.CATEGORY_QUANTITY and rule.category_target_id in category_quantities:
-                if category_quantities[rule.category_target_id] >= rule.min_quantity:
-                    current_discount = subtotal * (rule.discount_percentage / 100)
-            if current_discount > best_discount_amount:
-                best_discount_amount = current_discount
-                applied_rule = rule
-        upsell_hint = None
-        if not applied_rule:
-            min_needed_for_hint = float('inf')
-            for rule in active_rules:
-                needed = 0
-                current_hint = ""
-                if rule.discount_type == DiscountRule.DiscountType.TOTAL_QUANTITY:
-                    needed = rule.min_quantity - total_quantity
-                    if 0 < needed:
-                        current_hint = f"Добавьте еще {needed} шт. любого товара, чтобы получить скидку {rule.discount_percentage}%!"
-                elif rule.discount_type == DiscountRule.DiscountType.PRODUCT_QUANTITY and rule.product_target:
-                    current_qty = product_quantities.get(rule.product_target.id, 0)
-                    needed = rule.min_quantity - current_qty
-                    if 0 < needed:
-                        product_name = rule.product_target.name
-                        current_hint = f"Добавьте еще {needed} шт. товара «{product_name}», чтобы получить скидку {rule.discount_percentage}%!"
-                elif rule.discount_type == DiscountRule.DiscountType.CATEGORY_QUANTITY and rule.category_target:
-                    current_qty = category_quantities.get(rule.category_target.id, 0)
-                    needed = rule.min_quantity - current_qty
-                    if 0 < needed:
-                        category_name = rule.category_target.name
-                        current_hint = f"Добавьте еще {needed} шт. из категории «{category_name}», чтобы получить скидку {rule.discount_percentage}%!"
-                if current_hint and needed < min_needed_for_hint:
-                    min_needed_for_hint = needed
-                    upsell_hint = current_hint
-        final_total = subtotal - best_discount_amount
-        response_data = {
-            'subtotal': subtotal.quantize(Decimal("0.01")),
-            'discount_amount': best_discount_amount.quantize(Decimal("0.01")),
-            'final_total': final_total.quantize(Decimal("0.01")),
-            'applied_rule': applied_rule.name if applied_rule else None,
-            'upsell_hint': upsell_hint
-        }
-        return Response(response_data)
-
 class ShopSettingsView(APIView):
     def get(self, request, *args, **kwargs):
         settings = ShopSettings.load()
@@ -282,3 +198,250 @@ class DealOfTheDayView(generics.RetrieveAPIView):
             deal_ends_at__gt=now       # Проверяем, что срок акции не истек
         ).order_by('deal_ends_at').first()
         return deal_product
+
+
+
+def calculate_detailed_discounts(items):
+    """
+    Рассчитывает скидки и возвращает ДЕТАЛИЗИРОВАННЫЙ список товаров.
+    'items' должен быть списком CartItem.
+    """
+    if not items:
+        return {
+            'items': [],
+            'subtotal': '0.00', 'discount_amount': '0.00', 'final_total': '0.00',
+            'applied_rule': None, 'upsell_hint': None
+        }
+
+    subtotal = Decimal('0')
+    total_quantity = 0
+    product_quantities = {}
+    category_quantities = {}
+
+    # Конвертируем queryset в простой список для удобства
+    item_list = [{'product': item.product, 'quantity': item.quantity, 'id': item.id} for item in items]
+
+    for item in item_list:
+        product = item['product']
+        quantity = item['quantity']
+        price = product.current_price
+        subtotal += price * quantity
+        total_quantity += quantity
+        product_quantities[product.id] = quantity
+        current_category = product.category
+        while current_category is not None:
+            category_quantities[current_category.id] = category_quantities.get(current_category.id, 0) + quantity
+            current_category = current_category.parent
+
+    best_discount_amount = Decimal('0')
+    applied_rule = None
+    active_rules = DiscountRule.objects.filter(is_active=True).select_related('product_target', 'category_target')
+
+    for rule in active_rules:
+        current_discount = Decimal('0')
+        if rule.discount_type == DiscountRule.DiscountType.TOTAL_QUANTITY:
+            if total_quantity >= rule.min_quantity:
+                current_discount = subtotal * (rule.discount_percentage / 100)
+        elif rule.discount_type == DiscountRule.DiscountType.PRODUCT_QUANTITY and rule.product_target_id in product_quantities:
+            if product_quantities[rule.product_target_id] >= rule.min_quantity:
+                target_subtotal = item_list[0]['product'].current_price * item_list[0]['quantity'] # Пример упрощен
+                for item in item_list:
+                    if item['product'].id == rule.product_target_id:
+                        target_subtotal = item['product'].current_price * item['quantity']
+                current_discount = target_subtotal * (rule.discount_percentage / 100)
+        elif rule.discount_type == DiscountRule.DiscountType.CATEGORY_QUANTITY and rule.category_target_id in category_quantities:
+            if category_quantities[rule.category_target_id] >= rule.min_quantity:
+                target_subtotal = Decimal('0')
+                target_category_id = rule.category_target_id
+                for item in item_list:
+                    is_in_target_category = False
+                    cat = item['product'].category
+                    while cat is not None:
+                        if cat.id == target_category_id: is_in_target_category = True; break
+                        cat = cat.parent
+                    if is_in_target_category: target_subtotal += item['product'].current_price * item['quantity']
+                current_discount = target_subtotal * (rule.discount_percentage / 100)
+        if current_discount > best_discount_amount:
+            best_discount_amount = current_discount
+            applied_rule = rule
+
+    # --- 2. "РАСКРАШИВАЕМ" ТОВАРЫ ПОСЛЕ НАХОЖДЕНИЯ ЛУЧШЕЙ СКИДКИ ---
+    final_items = []
+    if applied_rule:
+        for item in item_list:
+            product = item['product']
+            quantity = item['quantity']
+            original_price = product.current_price
+            discounted_price = None
+
+            is_discounted = False
+            if applied_rule.discount_type == DiscountRule.DiscountType.TOTAL_QUANTITY:
+                is_discounted = True
+            elif applied_rule.discount_type == DiscountRule.DiscountType.PRODUCT_QUANTITY:
+                if product.id == applied_rule.product_target_id: is_discounted = True
+            elif applied_rule.discount_type == DiscountRule.DiscountType.CATEGORY_QUANTITY:
+                cat = product.category
+                while cat is not None:
+                    if cat.id == applied_rule.category_target_id: is_discounted = True; break
+                    cat = cat.parent
+
+            if is_discounted:
+                discounted_price = original_price * (Decimal('100') - applied_rule.discount_percentage) / Decimal('100')
+
+            final_items.append({
+                'id': item['id'],
+                'product': product,
+                'quantity': quantity,
+                'original_price': original_price,
+                'discounted_price': discounted_price.quantize(Decimal("0.01")) if discounted_price else None
+            })
+    else:
+        # Если скидки нет, просто форматируем данные
+        for item in item_list:
+            final_items.append({
+                'id': item['id'],
+                'product': item['product'],
+                'quantity': item['quantity'],
+                'original_price': item['product'].current_price,
+                'discounted_price': None
+            })
+
+
+    # --- Логика подсказок остается той же, она уже работает правильно ---
+    upsell_hint = None
+    if not applied_rule:
+        # ... (здесь вся ваша существующая логика для upsell_hint без изменений)
+        min_needed_for_hint = float('inf')
+        for rule in active_rules:
+            needed = 0
+            current_hint = ""
+            if rule.discount_type == DiscountRule.DiscountType.TOTAL_QUANTITY:
+                needed = rule.min_quantity - total_quantity
+                if 0 < needed: current_hint = f"Добавьте еще {needed} шт. любого товара, чтобы получить скидку {rule.discount_percentage}%!"
+            elif rule.discount_type == DiscountRule.DiscountType.PRODUCT_QUANTITY and rule.product_target:
+                current_qty = product_quantities.get(rule.product_target.id, 0)
+                needed = rule.min_quantity - current_qty
+                if 0 < needed: current_hint = f"Добавьте еще {needed} шт. товара «{rule.product_target.name}», чтобы получить скидку {rule.discount_percentage}%!"
+            elif rule.discount_type == DiscountRule.DiscountType.CATEGORY_QUANTITY and rule.category_target:
+                current_qty = category_quantities.get(rule.category_target.id, 0)
+                needed = rule.min_quantity - current_qty
+                if 0 < needed: current_hint = f"Добавьте еще {needed} шт. из категории «{rule.category_target.name}», чтобы получить скидку {rule.discount_percentage}%!"
+
+            if current_hint and needed < min_needed_for_hint:
+                min_needed_for_hint = needed
+                upsell_hint = current_hint
+
+    # --- Финальный расчет ---
+    final_total = subtotal - best_discount_amount
+
+    return {
+        'items': final_items,
+        'subtotal': subtotal.quantize(Decimal("0.01")),
+        'discount_amount': best_discount_amount.quantize(Decimal("0.01")),
+        'final_total': final_total,
+        'applied_rule': applied_rule.name if applied_rule else None,
+        'upsell_hint': upsell_hint,
+    }
+
+
+# --- 2. НОВЫЙ VIEW ДЛЯ ДИНАМИЧЕСКОГО РАСЧЕТА ---
+class CalculateSelectionView(APIView):
+    """
+    Рассчитывает итоги и скидки для произвольного набора товаров (выбранных).
+    """
+    def post(self, request, *args, **kwargs):
+        selection = request.data.get('selection', [])
+
+        # Конвертируем selection в queryset CartItem-ов "на лету"
+        # Это хак, но он позволяет переиспользовать код
+        cart_items_mock = []
+        for item_data in selection:
+            try:
+                product = Product.objects.select_related('category').get(id=item_data['product_id'])
+                cart_item = CartItem(product=product, quantity=item_data['quantity'])
+                cart_items_mock.append(cart_item)
+            except Product.DoesNotExist:
+                continue
+
+        detailed_data = calculate_detailed_discounts(cart_items_mock)
+        # Сериализуем "раскрашенные" товары
+        detailed_data['items'] = DetailedCartItemSerializer(detailed_data['items'], many=True, context={'request': request}).data
+        return Response(detailed_data)
+
+# --- 3. ОБНОВЛЯЕМ CartView, ЧТОБЫ ОН ИСПОЛЬЗОВАЛ НОВУЮ ФУНКЦИЮ ---
+class CartView(APIView):
+    def get(self, request, *args, **kwargs):
+        telegram_id = request.headers.get('X-Telegram-ID')
+        if not telegram_id:
+            return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart, _ = Cart.objects.prefetch_related('items__product__category', 'items__product__info_panels').get_or_create(telegram_id=telegram_id)
+
+        detailed_data = calculate_detailed_discounts(cart.items.all())
+        # Сериализуем "раскрашенные" товары
+        detailed_data['items'] = DetailedCartItemSerializer(detailed_data['items'], many=True, context={'request': request}).data
+
+        return Response(detailed_data)
+
+    def post(self, request, *args, **kwargs):
+        """Добавить/обновить/удалить товар и вернуть обновленную корзину с расчетами."""
+        telegram_id = request.headers.get('X-Telegram-ID')
+        if not telegram_id:
+            return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        product_id = request.data.get('product_id')
+        quantity = int(request.data.get('quantity', 1))
+
+        if not product_id:
+            return Response({"error": "Product ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart, created = Cart.objects.get_or_create(telegram_id=telegram_id)
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Товар не найден"}, status=status.HTTP_404_NOT_FOUND)
+
+        if quantity > 0:
+            # Используем update_or_create для более чистого кода
+            cart_item, created = CartItem.objects.update_or_create(
+                cart=cart,
+                product=product,
+                defaults={'quantity': quantity}
+            )
+        else:
+            # Если количество 0 или меньше, удаляем товар из корзины
+            CartItem.objects.filter(cart=cart, product=product).delete()
+
+        # Возвращаем обновленное состояние всей корзины с расчетами
+        cart.refresh_from_db()
+        detailed_data = calculate_detailed_discounts(cart.items.all())
+        detailed_data['items'] = DetailedCartItemSerializer(detailed_data['items'], many=True, context={'request': request}).data
+        return Response(detailed_data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        """Удалить несколько товаров из корзины по их ID."""
+        telegram_id = request.headers.get('X-Telegram-ID')
+        if not telegram_id:
+            return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ожидаем список ID товаров для удаления
+        product_ids = request.data.get('product_ids', [])
+        if not isinstance(product_ids, list):
+            return Response({"error": "Ожидается список product_ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cart = Cart.objects.get(telegram_id=telegram_id)
+            # Удаляем все CartItem, связанные с этой корзиной и переданными ID товаров
+            CartItem.objects.filter(cart=cart, product_id__in=product_ids).delete()
+        except Cart.DoesNotExist:
+            # Если корзины нет, значит, и удалять нечего. Просто возвращаем успех.
+            pass
+
+        # Возвращаем обновленное состояние всей корзины с расчетами
+        cart, _ = Cart.objects.get_or_create(telegram_id=telegram_id)
+        detailed_data = calculate_detailed_discounts(cart.items.all())
+        detailed_data['items'] = DetailedCartItemSerializer(detailed_data['items'], many=True, context={'request': request}).data
+        return Response(detailed_data, status=status.HTTP_200_OK)
+
+

@@ -1,11 +1,11 @@
 // frontend/src/components/CategoryBar.js
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import './CategoryBar.css';
 import { ReactComponent as BackIcon } from '../assets/back-arrow-icon.svg';
 
 const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => {
     const [activePath, setActivePath] = useState([]);
-    const [animationClass, setAnimationClass] = useState('slide-in-right');
+    const [ setAnimationClass] = useState('slide-in-right');
 
     const { displayedCategories, parentCategory } = useMemo(() => {
         // ... (этот хук без изменений)

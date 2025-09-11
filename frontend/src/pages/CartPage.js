@@ -7,96 +7,56 @@ import { useTelegram } from '../utils/telegram';
 import { useSettings } from '../context/SettingsContext';
 import FreeShippingProgressBar from '../components/FreeShippingProgressBar';
 import LottieAnimation from '../components/LottieAnimation';
-import { ReactComponent as ClearCartIcon } from '../assets/clear-cart-icon.svg';
+import CheckoutForm from './CheckoutForm';
+import { ReactComponent as CheckIcon } from '../assets/check-icon.svg';
+import { ReactComponent as TrashIcon } from '../assets/clear-cart-icon.svg';
 
 import './CartPage.css';
+
+const CustomCheckbox = ({ checked, onChange }) => (
+    <div className={`custom-checkbox ${checked ? 'checked' : ''}`} onClick={onChange}>
+        <CheckIcon />
+    </div>
+);
 
 const CartPage = () => {
     const tg = useTelegram();
     const navigate = useNavigate();
-    const { cartItems, updateQuantity, clearCart, discountInfo } = useCart();
+
+    // --- ИСПРАВЛЕНИЕ: Получаем ОДИН объект selectionInfo ---
+    const {
+        cartItems,
+        updateQuantity,
+        selectedItems,
+        toggleItemSelection,
+        toggleSelectAll,
+        deleteSelectedItems,
+        selectionInfo // Используем только этот объект для всех расчетов
+    } = useCart();
+
     const settings = useSettings();
-
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({
-        name: tg.initDataUnsafe.user?.first_name ?? '',
-        phone: '',
-        address: '',
-        shipping: 'Почта'
-    });
 
-    const isFormValid = formData.name && formData.phone && formData.address;
-
+    // Эффект для кнопки "Назад" (без изменений)
     useEffect(() => {
-        tg.BackButton.show();
-        const handleBackButtonClick = () => {
-            if (showForm) {
-                setShowForm(false);
-            } else {
-                navigate(-1);
-            }
-        };
-        tg.BackButton.onClick(handleBackButtonClick);
+        if (!showForm) {
+            tg.BackButton.show();
+            const handleBackButtonClick = () => navigate(-1);
+            tg.BackButton.onClick(handleBackButtonClick);
+            return () => {
+                tg.BackButton.offClick(handleBackButtonClick);
+                tg.BackButton.hide();
+            };
+        }
+    }, [navigate, tg, showForm]);
 
-        return () => {
-            tg.BackButton.offClick(handleBackButtonClick);
-            tg.BackButton.hide();
-        };
-    }, [navigate, showForm, tg]);
+    // Рендерим форму, если нужно
+    if (showForm) {
+        return <CheckoutForm onBack={() => setShowForm(false)} />;
+    }
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleCheckout = () => {
-        // --- НАЧАЛО ИЗМЕНЕНИЙ ---
-
-        // 1. Проверяем, достигнут ли порог бесплатной доставки
-        const threshold = parseFloat(settings.free_shipping_threshold);
-        const subtotal = parseFloat(discountInfo.subtotal);
-        const isFreeShipping = threshold > 0 && subtotal >= threshold;
-
-        const orderDetails = cartItems.map(item =>
-            `${item.name} (x${item.quantity})`
-        ).join('\n');
-
-        // 2. Формируем строку о доставке
-        const shippingInfo = isFreeShipping
-            ? `**Доставка:** ${formData.shipping} (БЕСПЛАТНО)`
-            : `**Доставка:** ${formData.shipping}, ${formData.address}`;
-
-        const summary = `
------------------
-Сумма: ${discountInfo.subtotal} ₽
-Скидка (${discountInfo.applied_rule || 'нет'}): ${discountInfo.discount_amount} ₽
-**Итого к оплате: ${discountInfo.final_total} ₽**
-        `.trim();
-
-        const fullMessage = `
-Привет! Хочу сделать заказ.
-
-**Клиент:** ${formData.name}
-**Телефон:** ${formData.phone}
-${shippingInfo}
-
-**Состав заказа:**
-${orderDetails}
-
-${summary}
-        `.trim();
-
-        // --- КОНЕЦ ИЗМЕНЕНИЙ ---
-
-        const managerUsername = settings.manager_username || 'username';
-        const encodedText = encodeURIComponent(fullMessage);
-        const telegramLink = `https://t.me/${managerUsername}?text=${encodedText}`;
-
-        tg.openTelegramLink(telegramLink);
-        tg.close();
-    };
-
-    if (cartItems.length === 0 && !showForm) {
+    // Рендер пустой корзины (без изменений)
+    if (cartItems.length === 0) {
         return (
             <div className="cart-page empty">
                 <LottieAnimation src={settings.cart_lottie_url} />
@@ -111,91 +71,100 @@ ${summary}
 
     return (
         <div className="cart-page">
-            {!showForm ? (
-                <>
-                    <div className="cart-header">
-                        <h1>Корзина</h1>
-                        <button className="clear-cart-btn" onClick={clearCart} title="Очистить корзину">
-                            <ClearCartIcon />
-                        </button>
-                    </div>
+            <div className="cart-header">
+                <h1>Корзина</h1>
+            </div>
 
-                    <FreeShippingProgressBar
-                        currentAmount={parseFloat(discountInfo.subtotal)}
-                        threshold={parseFloat(settings.free_shipping_threshold)}
+            <div className="cart-actions-header">
+                <div className="select-all-container" onClick={toggleSelectAll}>
+                    <CustomCheckbox
+                        checked={cartItems.length > 0 && selectedItems.size === cartItems.length}
                     />
+                    <span>Выбрать все</span>
+                </div>
+                <div className="action-buttons">
+                    {selectedItems.size > 0 && (
+                        <button onClick={deleteSelectedItems} title="Удалить выбранное">
+                            <TrashIcon />
+                        </button>
+                    )}
+                </div>
+            </div>
 
-                    <div className="cart-items">
-                        {cartItems.map(item => (
-                            <div key={item.id} className="cart-item">
-                                <img src={item.main_image_thumbnail_url} alt={item.name} className="cart-item-img" />
-                                <div className="cart-item-info">
-                                    <div className="cart-item-name">{item.name}</div>
-                                    <div className="cart-item-price">{parseFloat(item.price).toFixed(0)} ₽</div>
-                                </div>
-                                <div className="cart-item-controls">
-                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>
-                                    <span>{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+            {/* --- ИСПРАВЛЕНИЕ: Используем subtotal из selectionInfo --- */}
+            <FreeShippingProgressBar
+                currentAmount={parseFloat(selectionInfo.subtotal)}
+                threshold={parseFloat(settings.free_shipping_threshold)}
+            />
 
-                    <div className="sticky-footer">
-                        {discountInfo.upsell_hint && (
-                            <div className="upsell-hint">
-                                ✨ {discountInfo.upsell_hint}
-                            </div>
-                        )}
-
-                        <div className="order-summary">
-                            <div className="summary-row">
-                                <span>Товары</span>
-                                <span>{discountInfo.subtotal} ₽</span>
-                            </div>
-                            {parseFloat(discountInfo.discount_amount) > 0 && (
-                                <div className="summary-row discount">
-                                    <span>Скидка ({discountInfo.applied_rule || 'Ваша скидка'})</span>
-                                    <span>- {discountInfo.discount_amount} ₽</span>
-                                </div>
-                            )}
-                            <div className="summary-row final-total">
-                                <span>Итого</span>
-                                <span>{discountInfo.final_total} ₽</span>
+            <div className="cart-items">
+                {cartItems.map(item => (
+                    <div key={item.id} className="cart-item">
+                        <div className="cart-item-image-container">
+                            <CustomCheckbox
+                                checked={selectedItems.has(item.product.id)}
+                                onChange={() => toggleItemSelection(item.product.id)}
+                            />
+                            <img src={item.product.main_image_thumbnail_url} alt={item.product.name} className="cart-item-img"/>
+                        </div>
+                        <div className="cart-item-info">
+                            <div className="cart-item-name">{item.product.name}</div>
+                            {/* --- ВОТ ИЗМЕНЕНИЕ --- */}
+                            <div className="cart-item-price-container">
+                                {item.discounted_price ? (
+                                    <>
+                                        <span
+                                            className="new-price">{parseFloat(item.discounted_price).toFixed(0)} ₽</span>
+                                        <span
+                                            className="old-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
+                                    </>
+                                ) : (
+                                    <span className="normal-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
+                                )}
                             </div>
                         </div>
-
-                        <button className="checkout-btn" onClick={() => setShowForm(true)}>
-                            Оформить заказ
-                        </button>
-                    </div>
-                </>
-            ) : (
-                <>
-                    <h1 className="form-title">Оформление</h1>
-                    <form className="checkout-form" onSubmit={(e) => e.preventDefault()}>
-                        <input type="text" name="name" placeholder="ФИО" value={formData.name} onChange={handleInputChange} required />
-                        <input type="tel" name="phone" placeholder="Номер телефона" value={formData.phone} onChange={handleInputChange} required />
-                        <input type="text" name="address" placeholder="Адрес доставки (Город, улица, дом, квартира, индекс)" value={formData.address} onChange={handleInputChange} required />
-                        <div className="shipping-options">
-                            <label className={formData.shipping === 'Почта' ? 'active' : ''}>
-                                <input type="radio" name="shipping" value="Почта" checked={formData.shipping === 'Почта'} onChange={handleInputChange} />
-                                Почта
-                            </label>
-                            <label className={formData.shipping === 'СДЭК' ? 'active' : ''}>
-                                <input type="radio" name="shipping" value="СДЭК" checked={formData.shipping === 'СДЭК'} onChange={handleInputChange} />
-                                СДЭК
-                            </label>
+                        <div className="cart-item-controls">
+                            <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>−</button>
+                            <span>{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
                         </div>
-                    </form>
-                    <div className="sticky-footer">
-                        <button className="checkout-btn" onClick={handleCheckout} disabled={!isFormValid}>
-                            Готово
-                        </button>
                     </div>
-                </>
-            )}
+                ))}
+            </div>
+
+            <div className="sticky-footer">
+                {/* --- ИСПРАВЛЕНИЕ: Используем upsell_hint из selectionInfo --- */}
+                {selectionInfo.upsell_hint && (
+                    <div className="upsell-hint">
+                        ✨ {selectionInfo.upsell_hint}
+                    </div>
+                )}
+
+                <div className="order-summary">
+                    <div className="summary-row">
+                        <span>Товары</span>
+                        <span>{selectionInfo.subtotal} ₽</span>
+                    </div>
+                    {parseFloat(selectionInfo.discount_amount) > 0 && (
+                        <div className="summary-row discount">
+                            <span>Скидка ({selectionInfo.applied_rule || 'Ваша скидка'})</span>
+                            <span>- {selectionInfo.discount_amount} ₽</span>
+                        </div>
+                    )}
+                    <div className="summary-row final-total">
+                        <span>Итого к оплате</span>
+                        <span>{selectionInfo.final_total} ₽</span>
+                    </div>
+                </div>
+
+                <button
+                    className="checkout-btn"
+                    onClick={() => setShowForm(true)}
+                    disabled={selectedItems.size === 0}
+                >
+                {selectedItems.size > 0 ? `Купить` : 'Выберите товары'}
+                </button>
+            </div>
         </div>
     );
 };

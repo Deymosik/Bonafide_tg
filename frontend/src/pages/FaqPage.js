@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api';
-import FaqItem from '../components/FaqItem';
+import AccordionItem from '../components/AccordionItem';
 import { useSettings } from '../context/SettingsContext';
 import InfoCarousel from '../components/InfoCarousel';
 import './FaqPage.css';
@@ -39,7 +39,6 @@ const FaqPage = () => {
 
     return (
         <div className="faq-page">
-            <h1 className="faq-title">О магазине</h1>
 
             {/* Блок с переключателем и контентом вкладок */}
             <div className="info-tabs-section">
@@ -85,7 +84,9 @@ const FaqPage = () => {
                 ) : faqItems.length > 0 ? (
                     <div className="faq-list">
                         {faqItems.map(item => (
-                            <FaqItem key={item.id} question={item.question} answer={item.answer} />
+                            <AccordionItem key={item.id} title={item.question}>
+                                <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+                            </AccordionItem>
                         ))}
                     </div>
                 ) : (

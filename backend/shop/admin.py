@@ -1,9 +1,29 @@
 # backend/shop/admin.py
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
-from .models import InfoPanel, Category, Product, ProductImage, PromoBanner, ProductInfoCard, DiscountRule, ColorGroup, ShopSettings, FaqItem, ShopImage
+from .models import (
+    InfoPanel, Category, Product, ProductImage, PromoBanner, ProductInfoCard,
+    DiscountRule, ColorGroup, ShopSettings, FaqItem, ShopImage,
+    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem
+)
 
+class FeatureInline(admin.TabularInline):
+    model = Feature
+    extra = 1
+    verbose_name = "Особенность (функционал)"
+    verbose_name_plural = "Особенности (функционал)"
+    fields = ('name', 'order')
+
+class ProductCharacteristicInline(admin.TabularInline):
+    model = ProductCharacteristic
+    extra = 1
+    verbose_name = "Характеристика"
+    verbose_name_plural = "Характеристики"
+    # Позволяет выбрать характеристику из выпадающего списка
+    autocomplete_fields = ['characteristic']
+
+# --- Все классы Inline остаются без изменений ---
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
@@ -17,13 +37,13 @@ class ProductInfoCardInline(admin.TabularInline):
     verbose_name_plural = "Инфо-карточки (фичи)"
     fields = ('image', 'title', 'link_url')
 
-# 2. Создайте класс Inline для изображений
 class ShopImageInline(admin.TabularInline):
     model = ShopImage
-    extra = 1 # Показываем одну пустую форму для загрузки
+    extra = 1
     verbose_name = "Фотография для страницы 'Информация'"
     verbose_name_plural = "Фотографии для страницы 'Информация'"
     fields = ('image', 'caption', 'order')
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -32,26 +52,28 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     inlines = [ProductImageInline, ProductInfoCardInline]
     list_editable = ('is_active',)
+    search_fields = ('name', 'description', 'characteristics__characteristic__name', 'characteristics__value')
 
+    # 3. ДОБАВЛЯЕМ НОВЫЕ ИНЛАЙНЫ
+    inlines = [
+        ProductImageInline,
+        ProductInfoCardInline,
+        FeatureInline,
+        ProductCharacteristicInline,
+    ]
+    list_editable = ('is_active',)
 
-    # --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-    # Мы объединяем две последние секции в одну и убираем дубликат 'info_panels'.
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'color_group', 'category', 'regular_price', 'description', 'is_active')
         }),
-        # --- НОВАЯ СЕКЦИЯ ДЛЯ АКЦИИ ---
         ("Акция 'Товар дня'", {
-            'classes': ('collapse',), # Делаем секцию сворачиваемой
+            'classes': ('collapse',),
             'fields': ('deal_ends_at', 'deal_price')
         }),
         ('Медиафайлы', {
             'fields': ('main_image', 'audio_sample')
         }),
-        ('Характеристики и Функционал', {
-            'fields': ('functionality', 'characteristics')
-        }),
-        # Новая, объединенная и исправленная секция
         ('Связи и опции', {
             'fields': ('related_products', 'info_panels')
         }),
@@ -59,12 +81,13 @@ class ProductAdmin(admin.ModelAdmin):
 
     filter_horizontal = ('related_products', 'info_panels',)
 
-    # 3. ИЗМЕНЕНИЕ: Новый метод для красивого отображения статуса в списке
     @admin.display(description='Товар дня?', boolean=True)
     def display_deal_status(self, obj):
         return obj.is_deal_of_the_day
 
-    actions = ['make_active', 'make_inactive']
+    # --- 1. ДОБАВЛЯЕМ НОВЫЙ ЭКШЕН ---
+    actions = ['make_active', 'make_inactive', 'duplicate_product']
+
     def make_active(self, request, queryset):
         queryset.update(is_active=True)
     make_active.short_description = "Сделать выделенные товары активными"
@@ -73,6 +96,52 @@ class ProductAdmin(admin.ModelAdmin):
         queryset.update(is_active=False)
     make_inactive.short_description = "Сделать выделенные товары неактивными"
 
+    # --- 2. ДОБАВЛЯЕМ ЛОГИКУ КОПИРОВАНИЯ ---
+    @admin.action(description='Дублировать выбранные товары')
+    def duplicate_product(self, request, queryset):
+        if queryset.count() > 5:
+            self.message_user(
+                request,
+                "Можно дублировать не более 5 товаров за раз.",
+                messages.WARNING
+            )
+            return
+
+        for product in queryset:
+            # --- Сохраняем связи ManyToMany ---
+            related_products = list(product.related_products.all())
+            info_panels = list(product.info_panels.all())
+
+            # --- Сохраняем связанные дочерние объекты (Inlines) ---
+            images_to_copy = list(product.images.all())
+            cards_to_copy = list(product.info_cards.all())
+
+            # --- Создаем копию ---
+            product.pk = None  # Это "магический" трюк, который говорит Django, что это новый объект
+            product.name = f"{product.name} (копия)"
+            product.is_active = False # Новую копию лучше сделать неактивной по умолчанию
+            product.save() # Сохраняем новый товар, чтобы получить его ID
+
+            # --- Восстанавливаем связи ManyToMany ---
+            product.related_products.set(related_products)
+            product.info_panels.set(info_panels)
+
+            # --- Копируем связанные дочерние объекты ---
+            for image in images_to_copy:
+                image.pk = None # Создаем новый объект
+                image.product = product # Привязываем к новому товару
+                image.save()
+
+            for card in cards_to_copy:
+                card.pk = None
+                card.product = product
+                card.save()
+
+        self.message_user(
+            request,
+            f"Успешно создано {queryset.count()} копий товаров.",
+            messages.SUCCESS
+        )
 
 # --- Остальные классы вашей админ-панели остаются без изменений ---
 
@@ -89,6 +158,17 @@ class ColorGroupAdmin(admin.ModelAdmin):
 @admin.register(InfoPanel)
 class InfoPanelAdmin(admin.ModelAdmin):
     list_display = ('name', 'color', 'text_color')
+
+@admin.register(CharacteristicCategory)
+class CharacteristicCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'order')
+    list_editable = ('order',)
+
+@admin.register(Characteristic)
+class CharacteristicAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category')
+    list_filter = ('category',)
+    search_fields = ('name',)
 
 # --- ЗАМЕНЯЕМ АДМИНКУ ДЛЯ ПРОМО-БАННЕРОВ ---
 @admin.register(PromoBanner)
@@ -148,7 +228,7 @@ class ShopSettingsAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основные настройки', {
-            'fields': ('shop_name', 'manager_username', 'contact_phone')
+            'fields': ('manager_username', 'contact_phone')
         }),
         # --- НОВАЯ ГРУППИРОВКА ---
         ('Настройки страниц', {
@@ -182,3 +262,27 @@ class FaqItemAdmin(admin.ModelAdmin):
     list_display = ('question', 'order', 'is_active')
     list_editable = ('order', 'is_active')
     search_fields = ('question', 'answer')
+
+class CartItemInline(admin.TabularInline):
+    """Инлайн для отображения товаров прямо на странице корзины."""
+    model = CartItem
+    extra = 0
+    readonly_fields = ('product', 'quantity', 'added_at')
+    can_delete = False
+    verbose_name = "Товар в корзине"
+    verbose_name_plural = "Товары в корзине"
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ('telegram_id', 'created_at', 'updated_at')
+    search_fields = ('telegram_id',)
+    inlines = [CartItemInline]
+    # Запрещаем создание и изменение корзин вручную через админку
+    readonly_fields = ('telegram_id', 'created_at', 'updated_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        # Разрешаем просмотр, но запрещаем редактирование
+        return False if obj else True
