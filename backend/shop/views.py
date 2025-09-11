@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Prefetch
-import requests
+
 from decimal import Decimal
 
 from rest_framework import generics, filters, status
