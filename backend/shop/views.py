@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Prefetch
+import requests
 from decimal import Decimal
 
 from rest_framework import generics, filters, status
@@ -12,12 +13,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (
     Product, Category, PromoBanner, DiscountRule,
-    ShopSettings, FaqItem, Cart, CartItem
+    ShopSettings, FaqItem, Cart, CartItem, Order
 )
 from .serializers import (
     ProductListSerializer, ProductDetailSerializer, CategorySerializer,
     PromoBannerSerializer, ShopSettingsSerializer, FaqItemSerializer,
-    DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer
+    DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer, OrderCreateSerializer
 )
 
 # --- Существующие классы (без изменений) ---
@@ -445,3 +446,38 @@ class CartView(APIView):
         return Response(detailed_data, status=status.HTTP_200_OK)
 
 
+class OrderCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        telegram_id = request.headers.get('X-Telegram-ID')
+        if not telegram_id:
+            return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cart = Cart.objects.get(telegram_id=telegram_id)
+            selected_product_ids = {item['product_id'] for item in request.data.get('items', [])}
+            if not selected_product_ids:
+                 return Response({"error": "В заказе нет товаров"}, status=status.HTTP_400_BAD_REQUEST)
+            items_to_order = cart.items.filter(product_id__in=selected_product_ids)
+            if not items_to_order.exists():
+                return Response({"error": "Выбранные товары не найдены в корзине"}, status=status.HTTP_400_BAD_REQUEST)
+        except Cart.DoesNotExist:
+            return Response({"error": "Корзина не найдена"}, status=status.HTTP_404_NOT_FOUND)
+
+        calculation_results = calculate_detailed_discounts(list(items_to_order))
+
+        serializer = OrderCreateSerializer(data=request.data, context={'telegram_id': telegram_id, 'calculation_results': calculation_results})
+
+        if serializer.is_valid():
+            # Шаг 1: Просто сохраняем заказ в нашей базе данных
+            order = serializer.save()
+
+            # Шаг 2: Выводим в консоль сервера сообщение
+            # В будущем сюда можно добавить отправку уведомления менеджеру в Telegram
+            print(f"Новый заказ #{order.id} успешно создан и сохранен в Django Admin.")
+
+            # Шаг 3: Очищаем корзину от заказанных товаров
+            items_to_order.delete()
+
+            return Response({'success': True, 'order_id': order.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

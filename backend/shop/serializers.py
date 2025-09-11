@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner,
     ProductInfoCard, ColorGroup, ShopSettings, FaqItem, ShopImage,
-    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem
+    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem, Order, OrderItem
 )
 
 
@@ -306,3 +306,72 @@ class DetailedCartItemSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
     original_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     discounted_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    """Сериализатор для товаров ВНУТРИ заказа."""
+    product_id = serializers.IntegerField()
+
+    class Meta:
+        model = OrderItem
+        fields = ('product_id', 'quantity')
+
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для СОЗДАНИЯ заказа с новой структурой адреса."""
+    items = OrderItemSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Order
+        # Перечисляем все НОВЫЕ и старые поля, которые могут прийти с фронтенда
+        fields = (
+            'first_name', 'last_name', 'patronymic', 'phone',
+            'delivery_method',
+            'city', 'region', 'district', 'street', 'house', 'apartment', 'postcode',
+            'cdek_office_address',
+            'items'
+        )
+        # Делаем новые поля необязательными на уровне сериализатора
+        extra_kwargs = {
+            'city': {'required': False},
+            'region': {'required': False},
+            'district': {'required': False},
+            'street': {'required': False},
+            'house': {'required': False},
+            'apartment': {'required': False},
+            'postcode': {'required': False},
+            'cdek_office_address': {'required': False},
+        }
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        calculation_results = self.context.get('calculation_results')
+
+        if not calculation_results:
+             raise serializers.ValidationError("Не удалось рассчитать стоимость заказа.")
+
+        order = Order.objects.create(
+            **validated_data,
+            telegram_id=self.context.get('telegram_id'),
+            subtotal=calculation_results['subtotal'],
+            discount_amount=calculation_results['discount_amount'],
+            final_total=calculation_results['final_total'],
+            applied_rule=calculation_results['applied_rule']
+        )
+
+        for item_data in items_data:
+            product_info = next(
+                (item for item in calculation_results['items'] if item['product'].id == item_data['product_id']),
+                None
+            )
+            if not product_info:
+                continue
+
+            OrderItem.objects.create(
+                order=order,
+                product_id=item_data['product_id'],
+                quantity=item_data['quantity'],
+                price_at_purchase=product_info['discounted_price'] if product_info['discounted_price'] is not None else product_info['original_price']
+            )
+
+        return order

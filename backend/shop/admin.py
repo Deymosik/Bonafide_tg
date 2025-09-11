@@ -1,11 +1,12 @@
 # backend/shop/admin.py
-
+import csv
 from django.contrib import admin, messages
+from django.http import HttpResponse
 from django.utils.html import format_html
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner, ProductInfoCard,
     DiscountRule, ColorGroup, ShopSettings, FaqItem, ShopImage,
-    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem
+    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem, Order, OrderItem
 )
 
 class FeatureInline(admin.TabularInline):
@@ -286,3 +287,73 @@ class CartAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         # Разрешаем просмотр, но запрещаем редактирование
         return False if obj else True
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('product', 'quantity', 'price_at_purchase')
+    can_delete = False
+    verbose_name = "Товар в заказе"
+    verbose_name_plural = "Товары в заказе"
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status', 'get_full_name', 'delivery_method', 'city', 'final_total', 'created_at')
+    list_filter = ('status', 'delivery_method', 'created_at')
+    search_fields = ('id', 'first_name', 'last_name', 'phone', 'city', 'cdek_office_address')
+
+    readonly_fields = (
+        'id', 'created_at', 'telegram_id', 'get_full_name', 'phone',
+        'subtotal', 'discount_amount', 'final_total', 'applied_rule'
+    )
+    inlines = [OrderItemInline]
+    actions = ['export_as_csv']
+
+    fieldsets = (
+        ('Основная информация', {'fields': ('id', 'status', 'created_at', 'telegram_id')}),
+        ('Данные клиента', {'fields': ('get_full_name', 'phone')}),
+        ('Финансы', {'fields': ('subtotal', 'discount_amount', 'final_total', 'applied_rule')}),
+        # --- ОБНОВЛЕННЫЙ БЛОК АДРЕСА ---
+        ('Адрес доставки', {
+            'fields': (
+                'delivery_method',
+                'city',
+                'region',
+                'district',
+                'street',
+                'house',
+                'apartment',
+                'postcode',
+                'cdek_office_address'
+            )
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            # Делаем все поля, кроме статуса, только для чтения
+            base_readonly = list(self.readonly_fields)
+            all_fields = [field.name for field in self.model._meta.fields]
+            editable_fields = {'status'}
+            return base_readonly + [f for f in all_fields if f not in editable_fields]
+        return self.readonly_fields
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description='Экспортировать выбранные заказы в CSV')
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        # Добавляем новые поля в экспорт
+        field_names = [
+            'id', 'status', 'last_name', 'first_name', 'patronymic', 'phone',
+            'delivery_method', 'city', 'region', 'district', 'street', 'house',
+            'apartment', 'postcode', 'cdek_office_address', 'final_total', 'created_at'
+        ]
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename={meta.verbose_name_plural}.csv'
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for obj in queryset:
+            writer.writerow([getattr(obj, field) for field in field_names])
+        return response

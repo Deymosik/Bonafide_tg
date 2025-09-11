@@ -290,6 +290,7 @@ class DiscountRule(models.Model):
 
 # --- Модель ShopSettings (без изменений) ---
 class ShopSettings(models.Model):
+
     manager_username = models.CharField("Юзернейм менеджера в Telegram", max_length=100, help_text="Без @", default="username")
     contact_phone = models.CharField("Контактный телефон", max_length=20, blank=True)
     about_us_section = CKEditor5Field("Блок 'О нас'", blank=True, help_text="Краткий рассказ о магазине", config_name='default')
@@ -390,3 +391,73 @@ class CartItem(models.Model):
         verbose_name_plural = "Товары в корзине"
         # Гарантируем, что один и тот же товар не будет добавлен в одну корзину дважды
         unique_together = ('cart', 'product')
+
+class Order(models.Model):
+    class DeliveryMethod(models.TextChoices):
+        POST = 'Почта России', 'Почта России'
+        SDEK = 'СДЭК', 'СДЭК'
+
+    class OrderStatus(models.TextChoices):
+        NEW = 'new', 'Новый'
+        PROCESSING = 'processing', 'В обработке'
+        SHIPPED = 'shipped', 'Отправлен'
+        COMPLETED = 'completed', 'Выполнен'
+        CANCELED = 'canceled', 'Отменен'
+
+    telegram_id = models.BigIntegerField("Telegram ID пользователя", db_index=True)
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    status = models.CharField("Статус заказа", max_length=20, choices=OrderStatus.choices, default=OrderStatus.NEW)
+
+    # Контактные данные
+    last_name = models.CharField("Фамилия", max_length=100)
+    first_name = models.CharField("Имя", max_length=100)
+    patronymic = models.CharField("Отчество", max_length=100, blank=True, default='')
+    phone = models.CharField("Номер телефона", max_length=20)
+
+    # --- ИЗМЕНЕННЫЙ БЛОК АДРЕСА ---
+    delivery_method = models.CharField("Способ доставки", max_length=50)
+
+    # Общее поле для обоих методов
+    city = models.CharField("Населенный пункт", max_length=100, blank=True)
+
+    # Поля для "Почты России"
+    region = models.CharField("Область, край, республика", max_length=150, blank=True)
+    district = models.CharField("Район", max_length=150, blank=True)
+    street = models.CharField("Улица", max_length=255, blank=True)
+    house = models.CharField("Дом", max_length=20, blank=True)
+    apartment = models.CharField("Квартира", max_length=20, blank=True)
+    postcode = models.CharField("Почтовый индекс", max_length=6, blank=True)
+
+    # Поле для "СДЭК"
+    cdek_office_address = models.CharField("Адрес пункта выдачи СДЭК", max_length=255, blank=True)
+
+    # Финансовая информация
+    subtotal = models.DecimalField("Сумма (без скидки)", max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField("Размер скидки", max_digits=10, decimal_places=2, default=0)
+    final_total = models.DecimalField("Итоговая сумма", max_digits=10, decimal_places=2)
+    applied_rule = models.CharField("Примененная скидка", max_length=255, blank=True, null=True)
+
+    def get_full_name(self):
+        return f"{self.last_name} {self.first_name} {self.patronymic}".strip()
+    get_full_name.short_description = "ФИО клиента"
+
+    def __str__(self):
+        return f"Заказ №{self.id} от {self.created_at.strftime('%Y-%m-%d')}"
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+        ordering = ['-created_at']
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name="Заказ")
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name="Товар")
+    quantity = models.PositiveIntegerField("Количество", default=1)
+    price_at_purchase = models.DecimalField("Цена на момент покупки", max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.product.name} (x{self.quantity})"
+
+    class Meta:
+        verbose_name = "Товар в заказе"
+        verbose_name_plural = "Товары в заказе"

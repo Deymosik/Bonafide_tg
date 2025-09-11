@@ -1,6 +1,10 @@
 # backend/shop/urls.py
 from django.urls import path
-from .views import ProductListView, ProductDetailView, CategoryListView, PromoBannerListView, ShopSettingsView, FaqListView, DealOfTheDayView, CartView, CalculateSelectionView
+from .views import (
+    ProductListView, ProductDetailView, CategoryListView, PromoBannerListView,
+    ShopSettingsView, FaqListView, DealOfTheDayView, CartView, CalculateSelectionView,
+    OrderCreateView # <-- ДОБАВИТЬ ИМПОРТ
+)
 
 urlpatterns = [
     # 2. ДОБАВЛЯЕМ НОВЫЙ ПУТЬ
@@ -13,4 +17,5 @@ urlpatterns = [
     path('deal-of-the-day/', DealOfTheDayView.as_view(), name='deal-of-the-day'),
     path('cart/', CartView.as_view(), name='cart-detail'),
     path('calculate-selection/', CalculateSelectionView.as_view(), name='calculate-selection'),
+    path('orders/create/', OrderCreateView.as_view(), name='order-create'),
 ]
