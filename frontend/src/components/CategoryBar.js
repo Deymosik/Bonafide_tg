@@ -1,14 +1,13 @@
-// frontend/src/components/CategoryBar.js
+// проект/frontend/src/components/CategoryBar.js
+
 import React, { useState, useMemo } from 'react';
 import './CategoryBar.css';
 import { ReactComponent as BackIcon } from '../assets/back-arrow-icon.svg';
 
 const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => {
     const [activePath, setActivePath] = useState([]);
-    const [ setAnimationClass] = useState('slide-in-right');
 
     const { displayedCategories, parentCategory } = useMemo(() => {
-        // ... (этот хук без изменений)
         if (activePath.length === 0) {
             return { displayedCategories: categories, parentCategory: null };
         }
@@ -24,9 +23,8 @@ const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => {
 
     const handleCategoryClick = (category) => {
         if (category.subcategories && category.subcategories.length > 0) {
-            setAnimationClass('slide-in-right');
+            // setAnimationClass('slide-in-right'); // <-- ЭТА СТРОКА УДАЛЕНА
             setActivePath([...activePath, category.id]);
-            // При входе в подкатегорию, сбрасываем фильтр, так как выбрана родительская категория
             onSelectCategory(category.id.toString());
         } else {
             onSelectCategory(category.id.toString());
@@ -34,7 +32,7 @@ const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => {
     };
 
     const handleBackClick = () => {
-        setAnimationClass('slide-in-left');
+        // setAnimationClass('slide-in-left'); // <-- ЭТА СТРОКА УДАЛЕНА
         const newPath = [...activePath];
         newPath.pop();
         setActivePath(newPath);
@@ -43,12 +41,11 @@ const CategoryBar = ({ categories, selectedCategory, onSelectCategory }) => {
     };
 
     const handleReset = () => {
-        setAnimationClass('slide-in-left');
+        // setAnimationClass('slide-in-left'); // <-- ЭТА СТРОКА УДАЛЕНА
         setActivePath([]);
         onSelectCategory(null);
     };
 
-    // --- ИЗМЕНЕНИЕ ЗДЕСЬ: Добавляем корневой div-обертку ---
     return (
         <div className="category-bar-wrapper">
             {activePath.length > 0 ? (
