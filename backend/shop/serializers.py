@@ -318,23 +318,22 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для СОЗДАНИЯ заказа с новой структурой адреса."""
+    """Сериализатор для СОЗДАНИЯ заказа."""
     items = OrderItemSerializer(many=True, write_only=True)
 
     class Meta:
         model = Order
-        # Перечисляем все НОВЫЕ и старые поля, которые могут прийти с фронтенда
+        # ИЗМЕНЕНИЕ: Поле 'region' удалено из списка
         fields = (
             'first_name', 'last_name', 'patronymic', 'phone',
             'delivery_method',
-            'city', 'region', 'district', 'street', 'house', 'apartment', 'postcode',
+            'city', 'district', 'street', 'house', 'apartment', 'postcode',
             'cdek_office_address',
             'items'
         )
-        # Делаем новые поля необязательными на уровне сериализатора
         extra_kwargs = {
             'city': {'required': False},
-            'region': {'required': False},
+            # 'region': {'required': False}, # ИЗМЕНЕНИЕ: Удалено
             'district': {'required': False},
             'street': {'required': False},
             'house': {'required': False},

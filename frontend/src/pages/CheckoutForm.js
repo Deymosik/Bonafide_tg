@@ -9,6 +9,10 @@ import { useSettings } from '../context/SettingsContext';
 import apiClient from '../api';
 import './CartPage.css';
 
+import { ReactComponent as PostRusIcon } from '../assets/post-rus-icon.svg';
+import { ReactComponent as SdekIcon } from '../assets/sdek-icon.svg';
+
+
 const CheckoutForm = ({ onBack }) => {
     const tg = useTelegram();
     const settings = useSettings();
@@ -64,11 +68,11 @@ const CheckoutForm = ({ onBack }) => {
         }
     };
 
+    // ИЗМЕНЕНИЕ: Убрали 'region' из возвращаемого объекта
     const getAddressData = (data) => {
         if (data.delivery_method === 'Почта России') {
             return {
                 city: data.post_city,
-                region: data.post_region,
                 district: data.post_district,
                 street: data.post_street,
                 house: data.post_house,
@@ -98,16 +102,35 @@ const CheckoutForm = ({ onBack }) => {
 **Итого к оплате: ${selectionInfo.final_total} ₽**
         `.trim().replace(/^ +/gm, '');
 
+        // ИЗМЕНЕНИЕ: Новая логика для добавления информации о бесплатной доставке
+        let shippingInfo = '';
+        const threshold = parseFloat(settings.free_shipping_threshold);
+        const total = parseFloat(selectionInfo.final_total);
+        if (threshold > 0) {
+            shippingInfo = total >= threshold
+                ? '**Доставка:** Бесплатная'
+                : '**Доставка:** Платная';
+        }
+
+        // ИЗМЕНЕНИЕ: Улучшенная логика сборки адреса без 'region' и с фильтрацией пустых полей
         let addressBlock = '';
         if (formData.delivery_method === 'Почта России') {
+            const addressParts = [
+                formData.post_district,
+                `г. ${formData.post_city}`,
+                `ул. ${formData.post_street}`,
+                `д. ${formData.post_house}`,
+                formData.post_apartment ? `кв. ${formData.post_apartment}` : null
+            ].filter(Boolean).join(', '); // filter(Boolean) убирает пустые или null значения
+
             addressBlock = `
-**Доставка:** Почта России
-**Куда:** ${formData.post_region}, ${formData.post_district || 'N/A'}, г. ${formData.post_city}, ул. ${formData.post_street}, д. ${formData.post_house}, кв. ${formData.post_apartment}
+**Служба доставки:** Почта России
+**Куда:** ${addressParts}
 **Индекс:** ${formData.post_postcode}
             `.trim().replace(/^ +/gm, '');
         } else { // СДЭК
             addressBlock = `
-**Доставка:** СДЭК (Пункт выдачи)
+**Служба доставки:** СДЭК (Пункт выдачи)
 **Город:** ${formData.cdek_city}
 **Адрес ПВЗ:** ${formData.cdek_office_address}
             `.trim().replace(/^ +/gm, '');
@@ -120,6 +143,7 @@ const CheckoutForm = ({ onBack }) => {
 **Телефон:** ${formData.phone}
 
 ${addressBlock}
+${shippingInfo}
 
 **Состав заказа:**
 ${orderDetails}
@@ -134,95 +158,107 @@ ${summary}
         tg.openTelegramLink(telegramLink);
     };
 
+    // ИЗМЕНЕНИЕ: Вся JSX-разметка ниже была полностью переработана для улучшения UI/UX.
     return (
         <div className="cart-page">
-            <h1 className="form-title">Оформление</h1>
+
             <form className="checkout-form" onSubmit={handleSubmit(onSubmit)}>
-                {/* --- БЛОК КОНТАКТНЫХ ДАННЫХ --- */}
-                <div className="form-grid">
-                    <div className="form-field grid-full-width">
-                        <input type="text" placeholder="Фамилия" {...register('lastName', { required: 'Фамилия обязательна' })} className={`form-input ${errors.lastName ? 'invalid' : ''}`} maxLength={50} />
+
+                {/* ИЗМЕНЕНИЕ: Поля сгруппированы в визуальные секции-карточки */}
+                <div className="form-section">
+                    <h2 className="form-section-header">Контактная информация</h2>
+
+                    <div className="form-field">
+                        <input id="lastName" placeholder="Фамилия" type="text" {...register('lastName', { required: 'Фамилия обязательна' })} className={`form-input ${errors.lastName ? 'invalid' : ''}`} maxLength={50} />
                         {errors.lastName && <p className="error-message">{errors.lastName.message}</p>}
                     </div>
-                    <div className="form-field">
-                        <input type="text" placeholder="Имя" {...register('firstName', { required: 'Имя обязательно' })} className={`form-input ${errors.firstName ? 'invalid' : ''}`} maxLength={50} />
-                        {errors.firstName && <p className="error-message">{errors.firstName.message}</p>}
+
+                    <div className="form-grid">
+                        <div className="form-field">
+                            <input id="firstName" placeholder="Имя" type="text" {...register('firstName', { required: 'Имя обязательно' })} className={`form-input ${errors.firstName ? 'invalid' : ''}`} maxLength={50} />
+                            {errors.firstName && <p className="error-message">{errors.firstName.message}</p>}
+                        </div>
+                        <div className="form-field">
+                            <input id="patronymic" placeholder="Отчество" type="text" {...register('patronymic')} className="form-input" maxLength={50} />
+                        </div>
                     </div>
+
                     <div className="form-field">
-                        <input type="text" placeholder="Отчество (если есть)" {...register('patronymic')} className="form-input" maxLength={50} />
-                    </div>
-                    <div className="form-field grid-full-width">
                         <Controller name="phone" control={control} rules={{ required: 'Номер телефона обязателен', minLength: { value: 18, message: 'Введите номер полностью' }}}
-                                    render={({ field }) => <IMaskInput {...field} mask="+{7} (000) 000-00-00" placeholder="Номер телефона" className={`form-input ${errors.phone ? 'invalid' : ''}`} onAccept={(value) => field.onChange(value)} />}
+                                    render={({ field }) => <IMaskInput {...field} id="phone" placeholder="Номер телефона" mask="+{0} (000) 000-00-00" className={`form-input ${errors.phone ? 'invalid' : ''}`} onAccept={(value) => field.onChange(value)} />}
                         />
                         {errors.phone && <p className="error-message">{errors.phone.message}</p>}
                     </div>
                 </div>
 
-                {/* --- БЛОК ВЫБОРА ДОСТАВКИ --- */}
-                <h2 className="form-section-title">Какую службу вы выберете для доставки?</h2>
-                <div className="shipping-options">
-                    <label className={deliveryMethod === 'Почта России' ? 'active' : ''}>
-                        <input type="radio" value="Почта России" {...register('delivery_method')} />
-                        Почта России
-                    </label>
-                    <label className={deliveryMethod === 'СДЭК' ? 'active' : ''}>
-                        <input type="radio" value="СДЭК" {...register('delivery_method')} />
-                        СДЭК
-                    </label>
+                <div className="form-section">
+                    <h2 className="form-section-header">Способ доставки</h2>
+                    <p className="form-section-title">Какую службу вы выберете для доставки?</p>
+                    <div className="shipping-options">
+                        <label className={deliveryMethod === 'Почта России' ? 'active' : ''}>
+                            <input type="radio" value="Почта России" {...register('delivery_method')} />
+                            <PostRusIcon/>
+                        </label>
+                        <label className={deliveryMethod === 'СДЭК' ? 'active' : ''}>
+                            <input type="radio" value="СДЭК" {...register('delivery_method')} />
+                            <SdekIcon/>
+                        </label>
+                    </div>
                 </div>
 
-                {/* --- ДИНАМИЧЕСКИЙ БЛОК АДРЕСА --- */}
-                {deliveryMethod === 'Почта России' && (
-                    <div className="address-fields-container">
-                        <p className="delivery-instructions">Укажите полный адрес для доставки Почтой России. Все поля, кроме квартиры, обязательны.</p>
-                        <div className="form-field">
-                            <input placeholder="Область, край или республика" {...register('post_region', { required: 'Укажите регион' })} className={`form-input ${errors.post_region ? 'invalid' : ''}`} maxLength={100} />
-                            {errors.post_region && <p className="error-message">{errors.post_region.message}</p>}
-                        </div>
-                        <div className="form-field">
-                            <input placeholder="Район" {...register('post_district', { required: 'Укажите район' })} className={`form-input ${errors.post_district ? 'invalid' : ''}`} maxLength={100} />
-                            {errors.post_district && <p className="error-message">{errors.post_district.message}</p>}
-                        </div>
-                        <div className="form-field">
-                            <input placeholder="Населенный пункт (город, село...)" {...register('post_city', { required: 'Укажите населенный пункт' })} className={`form-input ${errors.post_city ? 'invalid' : ''}`} maxLength={100} />
-                            {errors.post_city && <p className="error-message">{errors.post_city.message}</p>}
-                        </div>
-                        <div className="form-grid">
-                            <div className="form-field grid-full-width">
+                {/* ИЗМЕНЕНИЕ: Динамический блок адреса теперь тоже является отдельной секцией */}
+                <div className="form-section">
+                    <h2 className="form-section-header">Адрес доставки</h2>
+
+                    {deliveryMethod === 'Почта России' && (
+                        <div className="address-fields-container">
+                            <p className="delivery-instructions">Укажите полный адрес для доставки Почтой России.</p>
+
+                            <div className="form-field">
+                                <input placeholder="Район" {...register('post_district')} className={`form-input ${errors.post_district ? 'invalid' : ''}`} maxLength={100} />
+                                {errors.post_district && <p className="error-message">{errors.post_district.message}</p>}
+                            </div>
+                            <div className="form-field">
+                                <input placeholder="Населенный пункт" {...register('post_city', { required: 'Укажите населенный пункт' })} className={`form-input ${errors.post_city ? 'invalid' : ''}`} maxLength={100} />
+                                {errors.post_city && <p className="error-message">{errors.post_city.message}</p>}
+                            </div>
+                            <div className="form-field">
                                 <input placeholder="Улица" {...register('post_street', { required: 'Укажите улицу' })} className={`form-input ${errors.post_street ? 'invalid' : ''}`} maxLength={150} />
                                 {errors.post_street && <p className="error-message">{errors.post_street.message}</p>}
                             </div>
-                            <div className="form-field">
-                                <input placeholder="Дом" {...register('post_house', { required: 'Укажите номер дома' })} className={`form-input ${errors.post_house ? 'invalid' : ''}`} maxLength={10} />
-                                {errors.post_house && <p className="error-message">{errors.post_house.message}</p>}
+                            <div className="form-grid">
+                                <div className="form-field">
+                                    <input placeholder="Дом" {...register('post_house', { required: 'Укажите номер дома' })} className={`form-input ${errors.post_house ? 'invalid' : ''}`} maxLength={10} />
+                                    {errors.post_house && <p className="error-message">{errors.post_house.message}</p>}
+                                </div>
+                                <div className="form-field">
+                                    <input placeholder="Квартира" {...register('post_apartment')} className="form-input" maxLength={10} />
+                                </div>
                             </div>
                             <div className="form-field">
-                                <input placeholder="Квартира" {...register('post_apartment')} className="form-input" maxLength={10} />
+                                <input type="tel" placeholder="Почтовый индекс" {...register('post_postcode', { required: 'Укажите индекс', pattern: { value: /^\d{6}$/, message: 'Индекс должен состоять из 6 цифр' } })} className={`form-input ${errors.post_postcode ? 'invalid' : ''}`} maxLength={6} />
+                                {errors.post_postcode && <p className="error-message">{errors.post_postcode.message}</p>}
                             </div>
                         </div>
-                        <div className="form-field">
-                            <input type="tel" placeholder="Почтовый индекс (6 цифр)" {...register('post_postcode', { required: 'Укажите индекс', pattern: { value: /^\d{6}$/, message: 'Индекс должен состоять из 6 цифр' } })} className={`form-input ${errors.post_postcode ? 'invalid' : ''}`} maxLength={6} />
-                            {errors.post_postcode && <p className="error-message">{errors.post_postcode.message}</p>}
-                        </div>
-                    </div>
-                )}
+                    )}
 
-                {deliveryMethod === 'СДЭК' && (
-                    <div className="address-fields-container">
-                        <p className="delivery-instructions">Укажите город и полный адрес пункта выдачи СДЭК (улица и номер дома).</p>
-                        <div className="form-field">
-                            <input placeholder="Населенный пункт" {...register('cdek_city', { required: 'Укажите город' })} className={`form-input ${errors.cdek_city ? 'invalid' : ''}`} maxLength={100} />
-                            {errors.cdek_city && <p className="error-message">{errors.cdek_city.message}</p>}
+                    {deliveryMethod === 'СДЭК' && (
+                        <div className="address-fields-container">
+                            <p className="delivery-instructions">Укажите город и полный адрес пункта выдачи СДЭК (улица и номер дома).</p>
+                            <div className="form-field">
+                                <input placeholder="Населенный пункт" {...register('cdek_city', { required: 'Укажите город' })} className={`form-input ${errors.cdek_city ? 'invalid' : ''}`} maxLength={100} />
+                                {errors.cdek_city && <p className="error-message">{errors.cdek_city.message}</p>}
+                            </div>
+                            <div className="form-field">
+                                <input placeholder="Адрес пункта выдачи" {...register('cdek_office_address', { required: 'Укажите адрес ПВЗ' })} className={`form-input ${errors.cdek_office_address ? 'invalid' : ''}`} maxLength={255} />
+                                {errors.cdek_office_address && <p className="error-message">{errors.cdek_office_address.message}</p>}
+                            </div>
                         </div>
-                        <div className="form-field">
-                            <input placeholder="Адрес пункта выдачи (улица, дом)" {...register('cdek_office_address', { required: 'Укажите адрес ПВЗ' })} className={`form-input ${errors.cdek_office_address ? 'invalid' : ''}`} maxLength={255} />
-                            {errors.cdek_office_address && <p className="error-message">{errors.cdek_office_address.message}</p>}
-                        </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </form>
 
+            {/* ИЗМЕНЕНИЕ: Футер остается прежним, он хорошо спроектирован */}
             <div className="sticky-footer">
                 <div className="order-summary">
                     <div className="summary-row final-total">

@@ -414,14 +414,13 @@ class Order(models.Model):
     patronymic = models.CharField("Отчество", max_length=100, blank=True, default='')
     phone = models.CharField("Номер телефона", max_length=20)
 
-    # --- ИЗМЕНЕННЫЙ БЛОК АДРЕСА ---
+    # --- ОБНОВЛЕННЫЙ БЛОК АДРЕСА ---
     delivery_method = models.CharField("Способ доставки", max_length=50)
 
-    # Общее поле для обоих методов
     city = models.CharField("Населенный пункт", max_length=100, blank=True)
 
     # Поля для "Почты России"
-    region = models.CharField("Область, край, республика", max_length=150, blank=True)
+    # ИЗМЕНЕНИЕ: Поле 'region' полностью удалено
     district = models.CharField("Район", max_length=150, blank=True)
     street = models.CharField("Улица", max_length=255, blank=True)
     house = models.CharField("Дом", max_length=20, blank=True)
@@ -448,6 +447,7 @@ class Order(models.Model):
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
         ordering = ['-created_at']
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name="Заказ")

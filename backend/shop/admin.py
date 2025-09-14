@@ -313,12 +313,11 @@ class OrderAdmin(admin.ModelAdmin):
         ('Основная информация', {'fields': ('id', 'status', 'created_at', 'telegram_id')}),
         ('Данные клиента', {'fields': ('get_full_name', 'phone')}),
         ('Финансы', {'fields': ('subtotal', 'discount_amount', 'final_total', 'applied_rule')}),
-        # --- ОБНОВЛЕННЫЙ БЛОК АДРЕСА ---
         ('Адрес доставки', {
+            # ИЗМЕНЕНИЕ: Поле 'region' удалено из списка
             'fields': (
                 'delivery_method',
                 'city',
-                'region',
                 'district',
                 'street',
                 'house',
@@ -331,7 +330,6 @@ class OrderAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            # Делаем все поля, кроме статуса, только для чтения
             base_readonly = list(self.readonly_fields)
             all_fields = [field.name for field in self.model._meta.fields]
             editable_fields = {'status'}
@@ -344,10 +342,10 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.action(description='Экспортировать выбранные заказы в CSV')
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
-        # Добавляем новые поля в экспорт
+        # ИЗМЕНЕНИЕ: Поле 'region' удалено из списка
         field_names = [
             'id', 'status', 'last_name', 'first_name', 'patronymic', 'phone',
-            'delivery_method', 'city', 'region', 'district', 'street', 'house',
+            'delivery_method', 'city', 'district', 'street', 'house',
             'apartment', 'postcode', 'cdek_office_address', 'final_total', 'created_at'
         ]
         response = HttpResponse(content_type='text/csv; charset=utf-8')

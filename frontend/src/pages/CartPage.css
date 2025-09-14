@@ -257,31 +257,48 @@
 }
 
 .shipping-options {
-    display: flex;
+    display: grid; /* Используем grid для идеального выравнивания */
+    grid-template-columns: 1fr 1fr; /* Две колонки одинаковой ширины */
     gap: 12px;
 }
 
 .shipping-options label {
-    flex-grow: 1;
-    padding: 14px;
-    text-align: center;
+    display: flex;
+    flex-direction: column; /* Иконка над текстом */
+    align-items: center;
+    justify-content: center;
+    padding: 10px 5px; /* Увеличиваем отступы, делая кнопку выше */
     border-radius: 12px;
-    border: 1px solid var(--tg-theme-hint-color, #c7c7cc);
+    border: 2px solid var(--tg-theme-secondary-bg-color, #f0f2f5); /* Рамка для неактивного состояния */
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600; /* Делаем текст жирнее */
+    font-size: 16px;
     color: var(--tg-theme-text-color, #000000);
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    text-align: center;
+    transition: all 0.2s ease-in-out; /* Плавная анимация */
 }
 
 .shipping-options label.active {
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    border-color: var(--tg-theme-button-color, #007aff);
-    font-weight: 600;
+    background-color: var(--tg-theme-bg-color, #ffffff); /* Фон как у страницы */
+    color: var(--tg-theme-button-color, #007aff); /* Текст в цвет акцента */
+    border-color: var(--tg-theme-button-color, #007aff); /* Рамка в цвет акцента */
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15); /* Легкая тень для выделения */
+}
+.shipping-options label.active svg {
+    fill: var(--tg-theme-button-color, #007aff); /* Иконка тоже в цвет акцента */
 }
 
 .shipping-options input[type="radio"] {
     display: none;
+}
+
+/* Стиль иконки внутри кнопки */
+.shipping-options label svg {
+    width: 70px; /* Увеличиваем размер иконки */
+    height: 50px;
+    fill: var(--tg-theme-hint-color, #8e8e93); /* Цвет неактивной иконки */
+    transition: all 0.2s ease-in-out;
 }
 
 .cart-actions-header {
@@ -476,4 +493,44 @@
     gap: 16px;
     margin-top: 16px;
     animation: fadeIn 0.4s ease;
+}
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ ПРОФЕССИОНАЛЬНОЙ ФОРМЫ --- */
+
+/* Контейнер для логической секции формы (например, "Контактные данные") */
+.form-section {
+    background-color: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.5s ease; /* Плавное появление секций */
+}
+
+/* Заголовок секции (например, "1. Контактная информация") */
+.form-section-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: var(--tg-theme-text-color, #000000);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+
+/* Стиль для <label> над полем ввода */
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--tg-theme-text-color, #333333);
+}
+
+/* Улучшаем отступы между полями внутри секции */
+.form-section .form-field,
+.form-section .form-grid {
+    margin-bottom: 12px;
+}
+.form-section .form-field:last-child,
+.form-section .form-grid:last-child {
+    margin-bottom: 0;
 }
