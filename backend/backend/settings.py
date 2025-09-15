@@ -1,5 +1,5 @@
 # backend/backend/settings.py - ФИНАЛЬНАЯ ЭТАЛОННАЯ ВЕРСИЯ
-
+from corsheaders.defaults import default_methods, default_headers
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -114,9 +114,14 @@ REST_FRAMEWORK = {
 cors_origins_str = os.environ.get('CORS_ALLOWED_ORIGINS_STR', 'http://localhost:3000')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',')]
 
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',') if origin]
 
-# --- Настройки для работы за Reverse Proxy (Nginx) в Production ---
-# Этот блок — ключ к исправлению ошибок CSRF и HTTPS.
+CORS_ALLOW_HEADERS = list(default_headers()) + [
+    'x-telegram-id',
+]
+
+# На всякий случай разрешаем все методы, это безопаснее для API
+CORS_ALLOW_METHODS = list(default_methods())
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
