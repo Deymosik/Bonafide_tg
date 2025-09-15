@@ -246,6 +246,11 @@ class ShopSettingsAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
             'fields': ('about_us_section', 'delivery_section', 'warranty_section')
         }),
+        ('Юридическая информация', {
+            'classes': ('collapse',),
+            'description': "Тексты документов, которые будут отображаться в приложении. Используйте форматирование для заголовков и списков.",
+            'fields': ('public_offer', 'privacy_policy')
+        }),
         ('Коммерческие настройки', {
             'classes': ('collapse',),
             'fields': ('free_shipping_threshold',)

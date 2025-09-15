@@ -227,7 +227,8 @@ class ShopSettingsSerializer(serializers.ModelSerializer):
         fields = (
             'manager_username', 'contact_phone', 'about_us_section',
             'delivery_section', 'warranty_section', 'images', 'free_shipping_threshold',
-            'search_placeholder', 'search_initial_text', 'search_lottie_url', 'cart_lottie_url'
+            'search_placeholder', 'search_initial_text', 'search_lottie_url', 'cart_lottie_url',
+            'public_offer', 'privacy_policy'
         )
 
     def get_search_lottie_url(self, obj):

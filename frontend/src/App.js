@@ -7,9 +7,11 @@ import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import SearchPage from './pages/SearchPage';
+import LegalPage from './pages/LegalPage';
 import FaqPage from './pages/FaqPage';
 import { useTelegram } from './utils/telegram';
 import { useNotification } from './context/NotificationContext';
+import CheckoutPage from './pages/CheckoutPage';
 import './App.css';
 
 
@@ -49,8 +51,16 @@ function App() {
                         <ProductPage />
                     </main>
                 } />
+                <Route path="/offer" element={<main className="page-content"><LegalPage /></main>} />
+                <Route path="/privacy" element={<main className="page-content"><LegalPage /></main>} />
 
-                {/* Сюда можно добавлять другие страницы без TabBar, например, страницу логина */}
+                <Route path="/checkout" element={
+                    <main className="page-content">
+                        <CheckoutPage />
+                    </main>
+                } />
+
+
             </Routes>
         </BrowserRouter>
     );

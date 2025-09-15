@@ -1,16 +1,13 @@
 // frontend/src/pages/CartPage.js
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../utils/telegram';
 import { useSettings } from '../context/SettingsContext';
 import FreeShippingProgressBar from '../components/FreeShippingProgressBar';
 import LottieAnimation from '../components/LottieAnimation';
-import CheckoutForm from './CheckoutForm';
 import { ReactComponent as CheckIcon } from '../assets/check-icon.svg';
 import { ReactComponent as TrashIcon } from '../assets/clear-cart-icon.svg';
-
 import './CartPage.css';
 
 const CustomCheckbox = ({ checked, onChange }) => (
@@ -35,25 +32,17 @@ const CartPage = () => {
     } = useCart();
 
     const settings = useSettings();
-    const [showForm, setShowForm] = useState(false);
 
     // Эффект для кнопки "Назад" (без изменений)
     useEffect(() => {
-        if (!showForm) {
-            tg.BackButton.show();
-            const handleBackButtonClick = () => navigate(-1);
-            tg.BackButton.onClick(handleBackButtonClick);
-            return () => {
-                tg.BackButton.offClick(handleBackButtonClick);
-                tg.BackButton.hide();
-            };
-        }
-    }, [navigate, tg, showForm]);
-
-    // Рендерим форму, если нужно
-    if (showForm) {
-        return <CheckoutForm onBack={() => setShowForm(false)} />;
-    }
+        tg.BackButton.show();
+        const handleBackButtonClick = () => navigate(-1);
+        tg.BackButton.onClick(handleBackButtonClick);
+        return () => {
+            tg.BackButton.offClick(handleBackButtonClick);
+            tg.BackButton.hide();
+        };
+    }, [navigate, tg]);
 
     // Рендер пустой корзины (без изменений)
     if (cartItems.length === 0) {
@@ -159,10 +148,10 @@ const CartPage = () => {
 
                 <button
                     className="checkout-btn"
-                    onClick={() => setShowForm(true)}
+                    onClick={() => navigate('/checkout')}
                     disabled={selectedItems.size === 0}
                 >
-                {selectedItems.size > 0 ? `Купить` : 'Выберите товары'}
+                    {selectedItems.size > 0 ? `Перейти к оформлению` : 'Выберите товары'}
                 </button>
             </div>
         </div>

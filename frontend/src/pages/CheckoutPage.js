@@ -1,22 +1,23 @@
 // проект/frontend/src/pages/CheckoutForm.js
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { IMaskInput } from 'react-imask';
 import { useCart } from '../context/CartContext';
 import { useTelegram } from '../utils/telegram';
 import { useSettings } from '../context/SettingsContext';
 import apiClient from '../api';
-import './CartPage.css';
-
+import './CheckoutPage.css';
 import { ReactComponent as PostRusIcon } from '../assets/post-rus-icon.svg';
 import { ReactComponent as SdekIcon } from '../assets/sdek-icon.svg';
 
 
-const CheckoutForm = ({ onBack }) => {
+const CheckoutPage = () => {
     const tg = useTelegram();
     const settings = useSettings();
+    const navigate = useNavigate();
     const { cartItems, selectedItems, selectionInfo, deleteSelectedItems } = useCart();
+    const [isAgreed, setIsAgreed] = useState(false);
 
     const {
         register,
@@ -36,9 +37,13 @@ const CheckoutForm = ({ onBack }) => {
 
     useEffect(() => {
         tg.BackButton.show();
-        tg.BackButton.onClick(onBack);
-        return () => { tg.BackButton.offClick(onBack); };
-    }, [onBack, tg]);
+        const handleBackClick = () => navigate('/cart');
+        tg.BackButton.onClick(handleBackClick);
+        return () => {
+            tg.BackButton.offClick(handleBackClick);
+            tg.BackButton.hide();
+        };
+    }, [tg, navigate]);
 
     const onSubmit = async (formData) => {
         const itemsToOrder = cartItems
@@ -160,7 +165,7 @@ ${summary}
 
     // ИЗМЕНЕНИЕ: Вся JSX-разметка ниже была полностью переработана для улучшения UI/UX.
     return (
-        <div className="cart-page">
+        <div className="checkout-page">
 
             <form className="checkout-form" onSubmit={handleSubmit(onSubmit)}>
 
@@ -169,23 +174,34 @@ ${summary}
                     <h2 className="form-section-header">Контактная информация</h2>
 
                     <div className="form-field">
-                        <input id="lastName" placeholder="Фамилия" type="text" {...register('lastName', { required: 'Фамилия обязательна' })} className={`form-input ${errors.lastName ? 'invalid' : ''}`} maxLength={50} />
+                        <input id="lastName" placeholder="Фамилия"
+                               type="text" {...register('lastName', {required: 'Фамилия обязательна'})}
+                               className={`form-input ${errors.lastName ? 'invalid' : ''}`} maxLength={50}/>
                         {errors.lastName && <p className="error-message">{errors.lastName.message}</p>}
                     </div>
 
                     <div className="form-grid">
                         <div className="form-field">
-                            <input id="firstName" placeholder="Имя" type="text" {...register('firstName', { required: 'Имя обязательно' })} className={`form-input ${errors.firstName ? 'invalid' : ''}`} maxLength={50} />
+                            <input id="firstName" placeholder="Имя"
+                                   type="text" {...register('firstName', {required: 'Имя обязательно'})}
+                                   className={`form-input ${errors.firstName ? 'invalid' : ''}`} maxLength={50}/>
                             {errors.firstName && <p className="error-message">{errors.firstName.message}</p>}
                         </div>
                         <div className="form-field">
-                            <input id="patronymic" placeholder="Отчество" type="text" {...register('patronymic')} className="form-input" maxLength={50} />
+                            <input id="patronymic" placeholder="Отчество" type="text" {...register('patronymic')}
+                                   className="form-input" maxLength={50}/>
                         </div>
                     </div>
 
                     <div className="form-field">
-                        <Controller name="phone" control={control} rules={{ required: 'Номер телефона обязателен', minLength: { value: 18, message: 'Введите номер полностью' }}}
-                                    render={({ field }) => <IMaskInput {...field} id="phone" placeholder="Номер телефона" mask="+{0} (000) 000-00-00" className={`form-input ${errors.phone ? 'invalid' : ''}`} onAccept={(value) => field.onChange(value)} />}
+                        <Controller name="phone" control={control} rules={{
+                            required: 'Номер телефона обязателен',
+                            minLength: {value: 18, message: 'Введите номер полностью'}
+                        }}
+                                    render={({field}) => <IMaskInput {...field} id="phone" placeholder="Номер телефона"
+                                                                     mask="+{0} (000) 000-00-00"
+                                                                     className={`form-input ${errors.phone ? 'invalid' : ''}`}
+                                                                     onAccept={(value) => field.onChange(value)}/>}
                         />
                         {errors.phone && <p className="error-message">{errors.phone.message}</p>}
                     </div>
@@ -215,63 +231,104 @@ ${summary}
                             <p className="delivery-instructions">Укажите полный адрес для доставки Почтой России.</p>
 
                             <div className="form-field">
-                                <input placeholder="Район" {...register('post_district')} className={`form-input ${errors.post_district ? 'invalid' : ''}`} maxLength={100} />
-                                {errors.post_district && <p className="error-message">{errors.post_district.message}</p>}
+                                <input placeholder="Район" {...register('post_district')}
+                                       className={`form-input ${errors.post_district ? 'invalid' : ''}`}
+                                       maxLength={100}/>
+                                {errors.post_district &&
+                                    <p className="error-message">{errors.post_district.message}</p>}
                             </div>
                             <div className="form-field">
-                                <input placeholder="Населенный пункт" {...register('post_city', { required: 'Укажите населенный пункт' })} className={`form-input ${errors.post_city ? 'invalid' : ''}`} maxLength={100} />
+                                <input
+                                    placeholder="Населенный пункт" {...register('post_city', {required: 'Укажите населенный пункт'})}
+                                    className={`form-input ${errors.post_city ? 'invalid' : ''}`} maxLength={100}/>
                                 {errors.post_city && <p className="error-message">{errors.post_city.message}</p>}
                             </div>
                             <div className="form-field">
-                                <input placeholder="Улица" {...register('post_street', { required: 'Укажите улицу' })} className={`form-input ${errors.post_street ? 'invalid' : ''}`} maxLength={150} />
+                                <input placeholder="Улица" {...register('post_street', {required: 'Укажите улицу'})}
+                                       className={`form-input ${errors.post_street ? 'invalid' : ''}`} maxLength={150}/>
                                 {errors.post_street && <p className="error-message">{errors.post_street.message}</p>}
                             </div>
                             <div className="form-grid">
                                 <div className="form-field">
-                                    <input placeholder="Дом" {...register('post_house', { required: 'Укажите номер дома' })} className={`form-input ${errors.post_house ? 'invalid' : ''}`} maxLength={10} />
+                                    <input
+                                        placeholder="Дом" {...register('post_house', {required: 'Укажите номер дома'})}
+                                        className={`form-input ${errors.post_house ? 'invalid' : ''}`} maxLength={10}/>
                                     {errors.post_house && <p className="error-message">{errors.post_house.message}</p>}
                                 </div>
                                 <div className="form-field">
-                                    <input placeholder="Квартира" {...register('post_apartment')} className="form-input" maxLength={10} />
+                                    <input placeholder="Квартира" {...register('post_apartment')} className="form-input"
+                                           maxLength={10}/>
                                 </div>
                             </div>
                             <div className="form-field">
-                                <input type="tel" placeholder="Почтовый индекс" {...register('post_postcode', { required: 'Укажите индекс', pattern: { value: /^\d{6}$/, message: 'Индекс должен состоять из 6 цифр' } })} className={`form-input ${errors.post_postcode ? 'invalid' : ''}`} maxLength={6} />
-                                {errors.post_postcode && <p className="error-message">{errors.post_postcode.message}</p>}
+                                <input type="tel" placeholder="Почтовый индекс" {...register('post_postcode', {
+                                    required: 'Укажите индекс',
+                                    pattern: {value: /^\d{6}$/, message: 'Индекс должен состоять из 6 цифр'}
+                                })} className={`form-input ${errors.post_postcode ? 'invalid' : ''}`} maxLength={6}/>
+                                {errors.post_postcode &&
+                                    <p className="error-message">{errors.post_postcode.message}</p>}
                             </div>
                         </div>
                     )}
 
                     {deliveryMethod === 'СДЭК' && (
                         <div className="address-fields-container">
-                            <p className="delivery-instructions">Укажите город и полный адрес пункта выдачи СДЭК (улица и номер дома).</p>
+                            <p className="delivery-instructions">Укажите город и полный адрес пункта выдачи СДЭК (улица
+                                и номер дома).</p>
                             <div className="form-field">
-                                <input placeholder="Населенный пункт" {...register('cdek_city', { required: 'Укажите город' })} className={`form-input ${errors.cdek_city ? 'invalid' : ''}`} maxLength={100} />
+                                <input
+                                    placeholder="Населенный пункт" {...register('cdek_city', {required: 'Укажите город'})}
+                                    className={`form-input ${errors.cdek_city ? 'invalid' : ''}`} maxLength={100}/>
                                 {errors.cdek_city && <p className="error-message">{errors.cdek_city.message}</p>}
                             </div>
                             <div className="form-field">
-                                <input placeholder="Адрес пункта выдачи" {...register('cdek_office_address', { required: 'Укажите адрес ПВЗ' })} className={`form-input ${errors.cdek_office_address ? 'invalid' : ''}`} maxLength={255} />
-                                {errors.cdek_office_address && <p className="error-message">{errors.cdek_office_address.message}</p>}
+                                <input
+                                    placeholder="Адрес пункта выдачи" {...register('cdek_office_address', {required: 'Укажите адрес ПВЗ'})}
+                                    className={`form-input ${errors.cdek_office_address ? 'invalid' : ''}`}
+                                    maxLength={255}/>
+                                {errors.cdek_office_address &&
+                                    <p className="error-message">{errors.cdek_office_address.message}</p>}
                             </div>
                         </div>
                     )}
                 </div>
+                <div className="form-footer">
+                    <div className="order-summary">
+                        <div className="summary-row final-total">
+                            <span>Итого к оплате</span>
+                            <span>{selectionInfo.final_total} ₽</span>
+                        </div>
+                    </div>
+
+                    <div className="agreement-checkbox-container">
+                        <input
+                            type="checkbox"
+                            id="agreement"
+                            checked={isAgreed}
+                            onChange={(e) => setIsAgreed(e.target.checked)}
+                        />
+                        <label htmlFor="agreement">
+                            Я согласен с условиями <Link to="/offer" target="_blank">Публичной оферты</Link> и даю
+                            согласие на обработку персональных данных в соответствии с <Link to="/privacy"
+                                                                                             target="_blank">Политикой
+                            конфиденциальности</Link>.
+                        </label>
+                    </div>
+
+                    <button
+                        className="checkout-btn"
+                        type="submit" // Хорошая практика - указывать type для кнопок в форме
+                        disabled={!isValid || !isAgreed}
+                    >
+                        Заказать
+                    </button>
+                </div>
             </form>
 
             {/* ИЗМЕНЕНИЕ: Футер остается прежним, он хорошо спроектирован */}
-            <div className="sticky-footer">
-                <div className="order-summary">
-                    <div className="summary-row final-total">
-                        <span>Итого к оплате</span>
-                        <span>{selectionInfo.final_total} ₽</span>
-                    </div>
-                </div>
-                <button className="checkout-btn" onClick={handleSubmit(onSubmit)} disabled={!isValid}>
-                    Заказать
-                </button>
-            </div>
+
         </div>
     );
 };
 
-export default CheckoutForm;
+export default CheckoutPage;

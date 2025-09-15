@@ -1,30 +1,26 @@
-/* frontend/src/pages/CartPage.css */
+/* проект/frontend/src/pages/CartPage.css */
 
 .cart-page {
     padding: 16px;
-    /* Убираем старый padding-bottom, так как теперь отступ создает сам sticky-footer */
 }
 
-/* --- СТИЛИ ДЛЯ ПУСТОЙ КОРЗИНЫ (НОВЫЕ) --- */
+/* Стили для пустой корзины */
 .cart-page.empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* Высота рассчитывается так, чтобы блок занимал видимую часть экрана над TabBar */
-    height: calc(100vh - 80px - 60px); /* 100% высоты - ~хедер - TabBar */
+    height: calc(100vh - 80px - 60px);
     padding: 20px;
     box-sizing: border-box;
 }
-
 .empty-cart-title {
     font-size: 22px;
     font-weight: 600;
     margin: 16px 0 8px 0;
     color: var(--tg-theme-text-color, #000000);
 }
-
 .empty-cart-subtitle {
     font-size: 16px;
     color: var(--tg-theme-hint-color, #8e8e93);
@@ -32,7 +28,6 @@
     line-height: 1.5;
     margin: 0 0 24px 0;
 }
-
 .empty-cart-button {
     width: 100%;
     max-width: 300px;
@@ -46,49 +41,60 @@
     color: var(--tg-theme-button-text-color, #ffffff);
 }
 
-
-/* --- ОБЩИЕ СТИЛИ СТРАНИЦЫ (ОБНОВЛЕННЫЕ) --- */
-
+/* Заголовок страницы корзины */
 .cart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
-
-.cart-header h1, .form-title {
+.cart-header h1 {
     font-size: 28px;
     font-weight: 700;
     margin: 0;
     color: var(--tg-theme-text-color, #000000);
 }
 
-.clear-cart-btn {
-    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    color: var(--tg-theme-hint-color, #8e8e93);
-    border: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+/* Блок с кнопками "Выбрать все" / "Удалить" */
+.cart-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+.cart-actions-header .select-all-container {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000);
     cursor: pointer;
 }
-
-.clear-cart-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: var(--tg-theme-hint-color, #333);
+.cart-actions-header .action-buttons button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+}
+.cart-actions-header .action-buttons button svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--tg-theme-hint-color, #8e8e93);
 }
 
-/* --- СПИСОК ТОВАРОВ (ОБНОВЛЕННЫЙ) --- */
+/* Список товаров в корзине */
 .cart-items {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* Добавляем отступ снизу, равный высоте футера, чтобы он не перекрывал последний товар */
-    padding-bottom: 180px;
+    /*
+      --- ВОТ ИЗМЕНЕНИЕ ---
+      Увеличили отступ снизу, чтобы "липкий" футер не перекрывал последний товар.
+    */
+    padding-bottom: 240px;
 }
 
 .cart-item {
@@ -98,7 +104,7 @@
     background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
     padding: 12px;
     border-radius: 16px;
-    animation: fadeIn 0.3s ease; /* Анимация появления */
+    animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -106,17 +112,23 @@
     to { opacity: 1; }
 }
 
+.cart-item-image-container {
+    position: relative;
+    flex-shrink: 0;
+    margin-right: 16px;
+}
+
 .cart-item-img {
     width: 70px;
     height: 70px;
     object-fit: cover;
     border-radius: 12px;
-    display: block; /* Убираем лишние отступы под картинкой */
+    display: block;
 }
 
 .cart-item-info {
     flex-grow: 1;
-    overflow: hidden; /* Важно для работы text-overflow */
+    overflow: hidden;
 }
 
 .cart-item-name {
@@ -128,9 +140,29 @@
     text-overflow: ellipsis;
 }
 
-.cart-item-price {
-    color: var(--tg-theme-hint-color, #8e8e93);
+.cart-item-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.normal-price {
+    color: var(--tg-theme-text-color, #000);
     font-size: 15px;
+    font-weight: 500;
+}
+
+.new-price {
+    color: var(--tg-theme-destructive-text-color, #E53935);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.old-price {
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 14px;
+    text-decoration: line-through;
 }
 
 .cart-item-controls {
@@ -163,8 +195,7 @@
 }
 
 
-/* --- ФУТЕР И СВОДКА (ОБНОВЛЕННЫЕ) --- */
-
+/* "Липкий" футер для страницы корзины */
 .sticky-footer {
     position: fixed;
     left: 0;
@@ -173,8 +204,8 @@
     background-color: var(--tg-theme-bg-color, #ffffff);
     border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-    /* Вычисляем позицию от низа, учитывая TabBar и безопасную зону */
     bottom: calc(60px + env(safe-area-inset-bottom));
+    z-index: 1;
 }
 
 .upsell-hint {
@@ -196,18 +227,15 @@
     flex-direction: column;
     gap: 8px;
 }
-
 .summary-row {
     display: flex;
     justify-content: space-between;
     font-size: 16px;
     color: var(--tg-theme-text-color, #000000);
 }
-
 .summary-row.discount span {
-    color: var(--tg-theme-link-color, #34c759); /* Используем цвет ссылок для скидки */
+    color: #34c759;
 }
-
 .summary-row.final-total {
     font-size: 20px;
     font-weight: 600;
@@ -234,124 +262,7 @@
     cursor: not-allowed;
 }
 
-
-/* --- ФОРМА ОФОРМЛЕНИЯ ЗАКАЗА (ОБНОВЛЕННАЯ) --- */
-.checkout-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Увеличили отступ */
-    /* Добавляем отступ снизу, чтобы футер не перекрывал последнее поле */
-    padding-bottom: 120px;
-}
-
-.checkout-form input[type="text"],
-.checkout-form input[type="tel"] {
-    width: 100%;
-    padding: 14px; /* Увеличили padding */
-    box-sizing: border-box;
-    border-radius: 12px; /* Увеличили скругление */
-    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
-    font-size: 16px;
-}
-
-.shipping-options {
-    display: grid; /* Используем grid для идеального выравнивания */
-    grid-template-columns: 1fr 1fr; /* Две колонки одинаковой ширины */
-    gap: 12px;
-}
-
-.shipping-options label {
-    display: flex;
-    flex-direction: column; /* Иконка над текстом */
-    align-items: center;
-    justify-content: center;
-    padding: 10px 5px; /* Увеличиваем отступы, делая кнопку выше */
-    border-radius: 12px;
-    border: 2px solid var(--tg-theme-secondary-bg-color, #f0f2f5); /* Рамка для неактивного состояния */
-    cursor: pointer;
-    font-weight: 600; /* Делаем текст жирнее */
-    font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    text-align: center;
-    transition: all 0.2s ease-in-out; /* Плавная анимация */
-}
-
-.shipping-options label.active {
-    background-color: var(--tg-theme-bg-color, #ffffff); /* Фон как у страницы */
-    color: var(--tg-theme-button-color, #007aff); /* Текст в цвет акцента */
-    border-color: var(--tg-theme-button-color, #007aff); /* Рамка в цвет акцента */
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15); /* Легкая тень для выделения */
-}
-.shipping-options label.active svg {
-    fill: var(--tg-theme-button-color, #007aff); /* Иконка тоже в цвет акцента */
-}
-
-.shipping-options input[type="radio"] {
-    display: none;
-}
-
-/* Стиль иконки внутри кнопки */
-.shipping-options label svg {
-    width: 70px; /* Увеличиваем размер иконки */
-    height: 50px;
-    fill: var(--tg-theme-hint-color, #8e8e93); /* Цвет неактивной иконки */
-    transition: all 0.2s ease-in-out;
-}
-
-.cart-actions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
-}
-
-.cart-actions-header .select-all-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
-    cursor: pointer;
-}
-
-.cart-actions-header .action-buttons button {
-    background: none;
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-}
-.cart-actions-header .action-buttons button svg {
-    width: 22px;
-    height: 22px;
-    fill: var(--tg-theme-hint-color, #8e8e93);
-}
-
-/* Стилизация самого товара в корзине */
-.cart-item {
-    display: flex;
-    align-items: center;
-    /* Убираем gap, так как чекбокс теперь не в потоке */
-    /* gap: 12px; */
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    padding: 12px;
-    border-radius: 16px;
-    animation: fadeIn 0.3s ease;
-}
-
-/* --- НОВЫЙ КОНТЕЙНЕР ДЛЯ КАРТИНКИ И ЧЕКБОКСА --- */
-.cart-item-image-container {
-    position: relative; /* Делаем его точкой отсчета для абсолютного позиционирования */
-    flex-shrink: 0; /* Запрещаем контейнеру сжиматься */
-    margin-right: 16px; /* Добавляем отступ справа, который раньше делал gap */
-}
-
-/* Стили для кастомного чекбокса */
+/* Стили для чекбокса */
 .custom-checkbox {
     width: 22px;
     height: 22px;
@@ -367,12 +278,10 @@
 }
 
 .cart-item .custom-checkbox {
-    position: absolute; /* Вырываем чекбокс из потока документа */
-    top: -6px;        /* Сдвигаем вверх */
-    left: -6px;       /* Сдвигаем влево */
-    z-index: 1;       /* Размещаем поверх картинки */
-
-    /* Добавляем тень для лучшей читаемости, как на вашем скриншоте */
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    z-index: 1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -394,143 +303,4 @@
 .custom-checkbox.checked svg {
     opacity: 1;
     transform: scale(1);
-}
-
-/* --- СТИЛИ ДЛЯ ЦЕН В КОРЗИНЕ --- */
-.cart-item-price-container {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.normal-price {
-    color: var(--tg-theme-text-color, #000);
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.new-price {
-    color: var(--tg-theme-destructive-text-color, #E53935); /* Красный цвет для акцента */
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.old-price {
-    color: var(--tg-theme-hint-color, #8e8e93);
-    font-size: 14px;
-    text-decoration: line-through;
-}
-
-/* --- СТИЛИ ДЛЯ НОВОЙ ФОРМЫ (ДОБАВИТЬ В КОНЕЦ ФАЙЛА) --- */
-
-.form-field {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.form-input {
-    width: 100%;
-    padding: 14px 16px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
-    font-size: 16px;
-    transition: border-color 0.2s ease;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #007aff);
-}
-
-.form-input.invalid {
-    border-color: var(--tg-theme-destructive-text-color, #ff3b30);
-}
-
-.error-message {
-    color: var(--tg-theme-destructive-text-color, #ff3b30);
-    font-size: 13px;
-    margin: 4px 0 0 8px;
-    animation: fadeIn 0.3s;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.grid-full-width {
-    grid-column: 1 / -1;
-}
-
-.form-section-title {
-    font-size: 17px;
-    font-weight: 600;
-    margin: 24px 0 8px 0;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.delivery-instructions {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    padding: 12px;
-    border-radius: 10px;
-    margin-top: 12px;
-    line-height: 1.4;
-    animation: fadeIn 0.4s ease;
-}
-
-.address-fields-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 16px;
-    animation: fadeIn 0.4s ease;
-}
-
-/* --- НОВЫЕ СТИЛИ ДЛЯ ПРОФЕССИОНАЛЬНОЙ ФОРМЫ --- */
-
-/* Контейнер для логической секции формы (например, "Контактные данные") */
-.form-section {
-    background-color: var(--tg-theme-secondary-bg-color, #f7f7f7);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    animation: fadeIn 0.5s ease; /* Плавное появление секций */
-}
-
-/* Заголовок секции (например, "1. Контактная информация") */
-.form-section-header {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 16px 0;
-    color: var(--tg-theme-text-color, #000000);
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
-}
-
-/* Стиль для <label> над полем ввода */
-.form-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--tg-theme-text-color, #333333);
-}
-
-/* Улучшаем отступы между полями внутри секции */
-.form-section .form-field,
-.form-section .form-grid {
-    margin-bottom: 12px;
-}
-.form-section .form-field:last-child,
-.form-section .form-grid:last-child {
-    margin-bottom: 0;
 }

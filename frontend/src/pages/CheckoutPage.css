@@ -1,0 +1,234 @@
+/* проект/frontend/src/pages/CheckoutPage.css */
+
+.checkout-page {
+    padding: 16px;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+}
+
+.form-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 16px;
+}
+
+/* Стили для секций и полей */
+.form-section {
+    background-color: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    border-radius: 12px;
+    padding: 16px;
+    animation: fadeIn 0.5s ease;
+}
+
+.form-section-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: var(--tg-theme-text-color, #000000);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+
+.form-section-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.form-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--tg-theme-text-color, #333333);
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    font-size: 16px;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #007aff);
+}
+
+.form-input.invalid {
+    border-color: var(--tg-theme-destructive-text-color, #ff3b30);
+}
+
+.error-message {
+    color: var(--tg-theme-destructive-text-color, #ff3b30);
+    font-size: 13px;
+    margin: 4px 0 0 8px;
+    animation: fadeIn 0.3s;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-section .form-field,
+.form-section .form-grid {
+    margin-bottom: 12px;
+}
+.form-section .form-field:last-child,
+.form-section .form-grid:last-child {
+    margin-bottom: 0;
+}
+
+.delivery-instructions {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    background-color: var(--tg-theme-secondary-bg-color, #e0e0e0);
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 12px;
+    line-height: 1.4;
+    animation: fadeIn 0.4s ease;
+}
+
+.address-fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+    animation: fadeIn 0.4s ease;
+}
+
+/* Стили для кнопок доставки */
+.shipping-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.shipping-options label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 5px;
+    border-radius: 12px;
+    border: 2px solid var(--tg-theme-secondary-bg-color, #f0f2f5);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000000);
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.shipping-options label svg {
+    width: 70px;
+    height: 50px;
+    fill: var(--tg-theme-hint-color, #8e8e93);
+    transition: all 0.2s ease-in-out;
+}
+
+.shipping-options label.active {
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-button-color, #007aff);
+    border-color: var(--tg-theme-button-color, #007aff);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+}
+
+.shipping-options label.active svg {
+    fill: var(--tg-theme-button-color, #007aff);
+}
+
+.shipping-options input[type="radio"] {
+    display: none;
+}
+
+/* Стили для футера формы */
+.form-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+}
+
+.order-summary {
+    width: 100%;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000000);
+}
+.summary-row.final-total {
+    font-size: 20px;
+    font-weight: 600;
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.agreement-checkbox-container {
+    margin-bottom: 16px;
+    padding: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.agreement-checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.agreement-checkbox-container label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    line-height: 1.5;
+}
+.agreement-checkbox-container a {
+    color: var(--tg-theme-link-color, #007aff);
+    text-decoration: none;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-theme-button-color, #007aff);
+    color: var(--tg-theme-button-text-color, #ffffff);
+}
+.checkout-btn:disabled {
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--tg-theme-hint-color, #8e8e93);
+    cursor: not-allowed;
+}

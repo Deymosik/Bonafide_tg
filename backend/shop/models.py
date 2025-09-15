@@ -316,6 +316,9 @@ class ShopSettings(models.Model):
         help_text="Отображается в пустой корзине"
     )
 
+    privacy_policy = CKEditor5Field("Политика конфиденциальности", blank=True, config_name='default')
+    public_offer = CKEditor5Field("Публичная оферта", blank=True, config_name='default')
+
     def __str__(self):
         return "Настройки магазина"
     def save(self, *args, **kwargs):
