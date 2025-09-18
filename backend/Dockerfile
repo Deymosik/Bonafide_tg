@@ -1,4 +1,4 @@
-# backend/Dockerfile - ФИНАЛЬНАЯ ЭТАЛОННАЯ ВЕРСИЯ
+# backend/Dockerfile
 
 FROM python:3.11-slim-bullseye
 
@@ -18,12 +18,18 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
+# Создаем пользователя ДО копирования кода
 RUN adduser --disabled-password --gecos "" appuser
-RUN mkdir -p /app/staticfiles /app/media
-RUN chown -R appuser:appuser /app
 
+# ИЗМЕНЕНИЕ: Копируем скрипт-помощник и сам код
+COPY --chown=appuser:appuser entrypoint.sh /entrypoint.sh
+COPY --chown=appuser:appuser . .
+
+# Указываем, что будем работать от имени appuser
 USER appuser
 
+# ИЗМЕНЕНИЕ: Указываем entrypoint, который будет выполняться первым
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Команда по умолчанию, которая будет передана в entrypoint
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backend.wsgi:application"]
