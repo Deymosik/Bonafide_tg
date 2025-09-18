@@ -9,6 +9,7 @@ body {
     /* Эти переменные Telegram Web Apps API подставит автоматически */
     background-color: var(--tg-theme-bg-color, #ffffff);
     color: var(--tg-theme-text-color, #000000);
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Убираем стандартные стили для ссылок, чтобы управлять ими самим */

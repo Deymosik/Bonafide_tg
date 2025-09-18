@@ -15,6 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Секретный ключ должен читаться из окружения. В .env файле он должен быть.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 # Режим отладки. На сервере должен быть 'False'.
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
@@ -33,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'whitenoise.runserver_nostatic',
     # Сторонние приложения
     'django_ckeditor_5',
     'rest_framework',
@@ -52,7 +53,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # WhiteNoise для эффективной раздачи статики
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+   # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -149,7 +150,8 @@ USE_TZ = True
 
 STATIC_URL = '/django-static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

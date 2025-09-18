@@ -16,12 +16,9 @@ const ProductPage = () => {
     const navigate = useNavigate();
     const tg = useTelegram();
     const { addToCart, cartItems, updateQuantity } = useCart();
-
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSwitchingColor, setIsSwitchingColor] = useState(false);
-
-    // Эта строка остается без изменений
     const itemInCart = cartItems.find(item => item && product && item.product.id === product.id);
 
     // Эта функция остается без изменений
@@ -120,6 +117,11 @@ const ProductPage = () => {
         return <div className="loader">Товар не найден</div>;
     }
 
+    const price = parseFloat(product.price);
+    const regularPrice = parseFloat(product.regular_price);
+    const hasDiscount = regularPrice > price;
+    const discountPercent = hasDiscount ? Math.round(((regularPrice - price) / regularPrice) * 100) : 0;
+
     // --- НАЧАЛО JSX РЕНДЕРИНГА (ЗДЕСЬ БУДУТ ВСЕ ВАШИ БЛОКИ) ---
     return (
         <div className={`product-page ${isSwitchingColor ? 'switching-color' : ''}`}>
@@ -160,7 +162,17 @@ const ProductPage = () => {
                     </div>
                 )}
 
-                <div className="product-price-main">{parseFloat(product.price).toFixed(0)} ₽</div>
+                <div className="price-section-main">
+                    {hasDiscount ? (
+                        <>
+                            <span className="price-main-current">{price.toFixed(0)} ₽</span>
+                            <span className="price-main-old">{regularPrice.toFixed(0)} ₽</span>
+                            <span className="discount-badge-page">-{discountPercent}%</span>
+                        </>
+                    ) : (
+                        <span className="price-main-regular">{regularPrice.toFixed(0)} ₽</span>
+                    )}
+                </div>
 
                 {product.audio_sample && (
                     <div className="product-section audio-section">

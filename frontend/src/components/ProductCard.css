@@ -81,3 +81,34 @@
     left: 0;
     background-color: #e0e0e0;
 }
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ ЦЕН (ДОБАВИТЬ В КОНЕЦ) --- */
+
+/* Контейнер для выравнивания цен */
+.price-container {
+    display: flex;
+    align-items: baseline; /* Выравниваем по базовой линии текста */
+    gap: 8px; /* Расстояние между ценами */
+}
+
+/* Новая (акционная) цена */
+.price-current {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-destructive-text-color, #E53935); /* Яркий акцентный цвет */
+}
+
+/* Обычная цена (когда нет скидки) */
+.price-regular {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+/* Старая (зачеркнутая) цена */
+.price-old {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    text-decoration: line-through; /* Зачеркивание */
+}

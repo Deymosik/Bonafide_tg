@@ -7,6 +7,7 @@ import debounce from 'lodash.debounce';
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
+export const MAX_QUANTITY = 10;
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
@@ -122,10 +123,26 @@ export const CartProvider = ({ children }) => {
     const addToCart = (product) => {
         const existingItem = cartItems.find(item => item.product.id === product.id);
         const newQuantity = existingItem ? existingItem.quantity + 1 : 1;
+        if (newQuantity > MAX_QUANTITY) return;
         handleCartAction(() => apiClient.post('/cart/', { product_id: product.id, quantity: newQuantity }));
     };
 
+    // ИЗМЕНЕНИЕ: Полностью переработанная функция с валидацией
     const updateQuantity = (productId, quantity) => {
+        // Правило №1: Если количество становится 0 или меньше, удаляем товар (quantity = 0)
+        if (quantity < 1) {
+            handleCartAction(() => apiClient.post('/cart/', { product_id: productId, quantity: 0 }));
+            return;
+        }
+
+        // Правило №2: Если количество превышает максимум, ничего не делаем
+        if (quantity > MAX_QUANTITY) {
+            // Можно добавить уведомление для пользователя, если нужно
+            console.warn(`Attempted to set quantity for product ${productId} to ${quantity}, which is over the limit of ${MAX_QUANTITY}.`);
+            return;
+        }
+
+        // Если все проверки пройдены, отправляем запрос на обновление
         handleCartAction(() => apiClient.post('/cart/', { product_id: productId, quantity: quantity }));
     };
 

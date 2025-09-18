@@ -128,11 +128,22 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'price', 'main_image_thumbnail_url', 'info_panels')
+        fields = (
+            'id',
+            'name',
+            'price', # Текущая (финальная) цена
+            'regular_price', # Обычная цена
+            'deal_price', # Акционная цена (если есть)
+            'main_image_thumbnail_url',
+            'info_panels'
+        )
 
     def get_main_image_thumbnail_url(self, obj):
         request = self.context.get('request')
-        return request.build_absolute_uri(obj.main_image_thumbnail.url) if hasattr(obj, 'main_image_thumbnail') and obj.main_image_thumbnail else None
+        # Проверяем наличие main_image_thumbnail, чтобы избежать ошибок, если у товара нет фото
+        if hasattr(obj, 'main_image_thumbnail') and obj.main_image_thumbnail:
+            return request.build_absolute_uri(obj.main_image_thumbnail.url)
+        return None
 
 # Сериализатор для цветовых вариаций (квадратики)
 class ColorVariationSerializer(serializers.ModelSerializer):

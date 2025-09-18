@@ -3,10 +3,11 @@ import React from 'react';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
-    // 1. ГЛАВНОЕ ИЗМЕНЕНИЕ: Мы теперь ожидаем поле 'main_image_thumbnail_url' от API.
-    // Оно содержит ссылку на легкое, сжатое webp-превью.
-    // Старое поле 'main_image' больше не используется в этом компоненте.
+
     const imageUrl = product.main_image_thumbnail_url;
+    const price = parseFloat(product.price);
+    const regularPrice = parseFloat(product.regular_price);
+    const hasDiscount = regularPrice > price;
 
     return (
         <div className="product-card">
@@ -33,8 +34,17 @@ const ProductCard = ({ product }) => {
 
             <div className="product-info">
                 <h3 className="product-name">{product.name}</h3>
-                {/* 3. Улучшение: Убираем копейки, если они нулевые, для более чистого вида. */}
-                <p className="product-price">{parseFloat(product.price).toFixed(0)} ₽</p>
+
+                <div className="price-container">
+                    {hasDiscount ? (
+                        <>
+                            <span className="price-current">{price.toFixed(0)} ₽</span>
+                            <span className="price-old">{regularPrice.toFixed(0)} ₽</span>
+                        </>
+                    ) : (
+                        <span className="price-regular">{regularPrice.toFixed(0)} ₽</span>
+                    )}
+                </div>
             </div>
         </div>
     );

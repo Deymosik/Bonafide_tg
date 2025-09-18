@@ -37,11 +37,16 @@ const CheckoutPage = () => {
 
     useEffect(() => {
         tg.BackButton.show();
-        const handleBackClick = () => navigate('/cart');
+        // --- ИЗМЕНЕНИЕ: Добавляем { replace: true } ---
+        // Теперь возврат в корзину не создает новую запись в истории, а заменяет текущую.
+        const handleBackClick = () => navigate('/cart', { replace: true });
         tg.BackButton.onClick(handleBackClick);
         return () => {
             tg.BackButton.offClick(handleBackClick);
-            tg.BackButton.hide();
+            // Прячем кнопку только если она еще не была спрятана
+            if (tg.BackButton.isVisible) {
+                tg.BackButton.hide();
+            }
         };
     }, [tg, navigate]);
 

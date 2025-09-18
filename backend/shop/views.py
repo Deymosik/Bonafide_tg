@@ -20,9 +20,39 @@ from .serializers import (
     PromoBannerSerializer, ShopSettingsSerializer, FaqItemSerializer,
     DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer, OrderCreateSerializer
 )
+from .utils import validate_init_data
 
-# --- Существующие классы (без изменений) ---
 
+# --- ИЗМЕНЕНИЕ: Определение миксина ПЕРЕНЕСЕНО В НАЧАЛО ФАЙЛА ---
+class TelegramAuthMixin(APIView):
+    """
+    Миксин для проверки аутентификации Telegram Web App.
+    Извлекает данные пользователя из initData и делает их доступными в request.telegram_user.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+
+        # Для локальной разработки без Telegram, разрешаем доступ в режиме DEBUG
+        if not auth_header and settings.DEBUG:
+            print("WARNING: Bypassing Telegram auth in DEBUG mode.")
+            # Подставляем фейковые данные для тестов
+            request.telegram_user = {'id': 123456789, 'first_name': 'Test', 'last_name': 'User', 'username': 'testuser'}
+            return super().dispatch(request, *args, **kwargs)
+
+        if not auth_header or not auth_header.startswith('tma '):
+            return Response({"error": "Authorization header is missing or invalid"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        init_data_str = auth_header.split(' ')[1]
+
+        # Валидируем initData с помощью нашего токена
+        user_data = validate_init_data(init_data_str, settings.TELEGRAM_BOT_TOKEN)
+
+        if user_data is None:
+            return Response({"error": "Invalid Telegram data"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Сохраняем проверенные данные пользователя в объект запроса для дальнейшего использования
+        request.telegram_user = user_data
+        return super().dispatch(request, *args, **kwargs)
 
 
 def parse_init_data(init_data: str, bot_token: str):
@@ -346,7 +376,7 @@ def calculate_detailed_discounts(items):
 
 
 # --- 2. НОВЫЙ VIEW ДЛЯ ДИНАМИЧЕСКОГО РАСЧЕТА ---
-class CalculateSelectionView(APIView):
+class CalculateSelectionView(TelegramAuthMixin):
     """
     Рассчитывает итоги и скидки для произвольного набора товаров (выбранных).
     """
@@ -370,9 +400,9 @@ class CalculateSelectionView(APIView):
         return Response(detailed_data)
 
 # --- 3. ОБНОВЛЯЕМ CartView, ЧТОБЫ ОН ИСПОЛЬЗОВАЛ НОВУЮ ФУНКЦИЮ ---
-class CartView(APIView):
+class CartView(TelegramAuthMixin):
     def get(self, request, *args, **kwargs):
-        telegram_id = request.headers.get('X-Telegram-ID')
+        telegram_id = request.telegram_user.get('id')
         if not telegram_id:
             return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -386,7 +416,7 @@ class CartView(APIView):
 
     def post(self, request, *args, **kwargs):
         """Добавить/обновить/удалить товар и вернуть обновленную корзину с расчетами."""
-        telegram_id = request.headers.get('X-Telegram-ID')
+        telegram_id = request.telegram_user.get('id')
         if not telegram_id:
             return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -422,7 +452,7 @@ class CartView(APIView):
 
     def delete(self, request, *args, **kwargs):
         """Удалить несколько товаров из корзины по их ID."""
-        telegram_id = request.headers.get('X-Telegram-ID')
+        telegram_id = request.telegram_user.get('id')
         if not telegram_id:
             return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -446,9 +476,9 @@ class CartView(APIView):
         return Response(detailed_data, status=status.HTTP_200_OK)
 
 
-class OrderCreateView(APIView):
+class OrderCreateView(TelegramAuthMixin):
     def post(self, request, *args, **kwargs):
-        telegram_id = request.headers.get('X-Telegram-ID')
+        telegram_id = request.telegram_user.get('id')
         if not telegram_id:
             return Response({"error": "Telegram ID не предоставлен"}, status=status.HTTP_400_BAD_REQUEST)
 

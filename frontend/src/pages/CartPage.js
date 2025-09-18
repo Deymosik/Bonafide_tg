@@ -1,6 +1,6 @@
 // frontend/src/pages/CartPage.js
 import React, { useEffect } from 'react';
-import { useCart } from '../context/CartContext';
+import { useCart, MAX_QUANTITY  } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../utils/telegram';
 import { useSettings } from '../context/SettingsContext';
@@ -33,15 +33,36 @@ const CartPage = () => {
 
     const settings = useSettings();
 
-    // Эффект для кнопки "Назад" (без изменений)
+    // ИЗМЕНЕНИЕ: Добавляем вспомогательную функцию для форматирования цены
+    const formatPrice = (priceString) => {
+        // Преобразуем строку в число и проверяем, равно ли оно нулю
+        if (parseFloat(priceString) === 0) {
+            return '0';
+        }
+        // Если число не ноль, возвращаем исходную строку (которая может содержать копейки)
+        return priceString;
+    };
+
     useEffect(() => {
-        tg.BackButton.show();
-        const handleBackButtonClick = () => navigate(-1);
-        tg.BackButton.onClick(handleBackButtonClick);
-        return () => {
-            tg.BackButton.offClick(handleBackButtonClick);
+        // Проверяем, есть ли куда возвращаться в истории.
+        // window.history.length > 2 означает, что есть что-то до страницы корзины
+        // (учитывая, что начальная страница - это первая запись).
+        if (window.history.length > 2) {
+            tg.BackButton.show();
+            const handleBackButtonClick = () => navigate(-1); // Просто "назад"
+            tg.BackButton.onClick(handleBackButtonClick);
+
+            return () => {
+                tg.BackButton.offClick(handleBackButtonClick);
+                if (tg.BackButton.isVisible) {
+                    tg.BackButton.hide();
+                }
+            };
+        } else {
+            // Если возвращаться некуда (например, пользователь открыл приложение сразу по ссылке на корзину),
+            // кнопку не показываем.
             tg.BackButton.hide();
-        };
+        }
     }, [navigate, tg]);
 
     // Рендер пустой корзины (без изменений)
@@ -115,7 +136,12 @@ const CartPage = () => {
                         <div className="cart-item-controls">
                             <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>−</button>
                             <span>{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
+                            <button
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                disabled={item.quantity >= MAX_QUANTITY}
+                            >
+                                +
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -125,24 +151,26 @@ const CartPage = () => {
                 {/* --- ИСПРАВЛЕНИЕ: Используем upsell_hint из selectionInfo --- */}
                 {selectionInfo.upsell_hint && (
                     <div className="upsell-hint">
-                        ✨ {selectionInfo.upsell_hint}
+                    ✨ {selectionInfo.upsell_hint}
                     </div>
                 )}
 
                 <div className="order-summary">
                     <div className="summary-row">
                         <span>Товары</span>
-                        <span>{selectionInfo.subtotal} ₽</span>
+                        <span>{formatPrice(selectionInfo.subtotal)} ₽</span>
                     </div>
                     {parseFloat(selectionInfo.discount_amount) > 0 && (
                         <div className="summary-row discount">
                             <span>Скидка ({selectionInfo.applied_rule || 'Ваша скидка'})</span>
-                            <span>- {selectionInfo.discount_amount} ₽</span>
+                            {/* ИЗМЕНЕНИЕ: Применяем нашу новую функцию */}
+                            <span>- {formatPrice(selectionInfo.discount_amount)} ₽</span>
                         </div>
                     )}
+
                     <div className="summary-row final-total">
                         <span>Итого к оплате</span>
-                        <span>{selectionInfo.final_total} ₽</span>
+                        <span>{formatPrice(selectionInfo.final_total)} ₽</span>
                     </div>
                 </div>
 

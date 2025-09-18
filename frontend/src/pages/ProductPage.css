@@ -20,11 +20,43 @@
     margin: 0 0 8px 0;
 }
 
-.product-price-main {
+.price-section-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+/* Новая (акционная) цена - делаем ее большой и заметной */
+.price-main-current {
     font-size: 28px;
     font-weight: 700;
-    margin: 16px 0;
-    color: var(--tg-theme-text-color);
+    color: var(--tg-theme-destructive-text-color, #E53935);
+}
+
+/* Обычная цена (когда нет скидки) */
+.price-main-regular {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+/* Старая (зачеркнутая) цена */
+.price-main-old {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    text-decoration: line-through;
+}
+
+/* Значок с процентом скидки */
+.discount-badge-page {
+    background-color: var(--tg-theme-destructive-text-color, #E53935);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .info-panels-product {

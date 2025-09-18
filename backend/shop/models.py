@@ -394,6 +394,7 @@ class CartItem(models.Model):
         verbose_name_plural = "Товары в корзине"
         # Гарантируем, что один и тот же товар не будет добавлен в одну корзину дважды
         unique_together = ('cart', 'product')
+        ordering = ['added_at']
 
 class Order(models.Model):
     class DeliveryMethod(models.TextChoices):

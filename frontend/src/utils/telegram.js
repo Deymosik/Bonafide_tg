@@ -1,23 +1,17 @@
-// frontend/src/utils/telegram.js
+// проект/frontend/src/utils/telegram.js
 
-// 1. ИЗМЕНЕНИЕ: Добавляем проверку на существование window.Telegram
 const tg = window.Telegram ? window.Telegram.WebApp : undefined;
 
 const tgMock = {
     ready: () => console.log('Mock TG: ready'),
     expand: () => console.log('Mock TG: expand'),
     close: () => console.log('Mock TG: close'),
-
-    // ИЗМЕНЕНИЕ: Заменяем sendData на openTelegramLink для соответствия новой логике
     openTelegramLink: (url) => {
         console.log(`Mock TG: Попытка открыть ссылку: ${url}`);
-        alert(`В реальном Telegram эта ссылка бы открылась:\n${url}`);
-        // Для более удобной отладки можно открывать ссылку в новой вкладке
-        // window.open(url, '_blank');
+        window.open(url, '_blank'); // Для удобства в браузере
     },
-
     showAlert: (message) => alert(message),
-    isVersionAtLeast: (version) => true, // Для отладки считаем, что все версии поддерживаются
+    isVersionAtLeast: (version) => true,
     HapticFeedback: {
         notificationOccurred: (type) => console.log(`Mock Haptic: ${type}`),
     },
@@ -27,8 +21,11 @@ const tgMock = {
         onClick: (cb) => { console.log('Mock BackButton: onClick handler set'); },
         offClick: () => console.log('Mock BackButton: onClick handler removed'),
     },
+    // ИЗМЕНЕНИЕ: Добавляем initData в заглушку
+    initData: '', // В режиме разработки initData пуст
     initDataUnsafe: {
         user: {
+            id: 123456789, // ID для заглушки
             first_name: 'Test',
             last_name: 'User'
         }
@@ -36,6 +33,5 @@ const tgMock = {
 };
 
 export const useTelegram = () => {
-    // Включаем заглушку, если tg объекта нет (например, в обычном браузере)
     return tg || tgMock;
 };

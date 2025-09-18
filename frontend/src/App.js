@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from './components/MainLayout';
 import Notification from './components/Notification';
 import HomePage from './pages/HomePage';
@@ -30,8 +30,13 @@ function App() {
         }
     }, [tg]); // Зависимость от [tg] гарантирует, что код выполнится один раз, когда tg станет доступен
 
+    const futureFlags = {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+    };
+
     return (
-        <BrowserRouter>
+        <Router future={futureFlags}>
             <Notification
                 message={notification.message}
                 type={notification.type}
@@ -62,7 +67,7 @@ function App() {
 
 
             </Routes>
-        </BrowserRouter>
+        </Router>
     );
 }
 

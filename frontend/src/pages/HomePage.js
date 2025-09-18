@@ -1,4 +1,4 @@
-// frontend/src/pages/HomePage.js
+// проект/frontend/src/pages/HomePage.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -13,79 +13,100 @@ import DealOfTheDay from '../components/DealOfTheDay';
 import './HomePage.css';
 
 const HomePage = () => {
+    // --- БЛОК СОСТОЯНИЙ (БЕЗ ИЗМЕНЕНИЙ) ---
     const [banners, setBanners] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [dealProduct, setDealProduct] = useState(null);
+    const [nextPage, setNextPage] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+
     const [searchParams, setSearchParams] = useSearchParams();
     const selectedCategory = searchParams.get('category');
     const currentOrdering = searchParams.get('ordering') || '-created_at';
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [nextPage, setNextPage] = useState(null);
-    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-    const observer = useRef();
-    const [dealProduct, setDealProduct] = useState(null);
 
+    const observer = useRef();
+
+    // --- ИЗМЕНЕНИЕ: Загрузка "статичного" контента (баннеры, категории) вынесена в отдельный useEffect ---
     useEffect(() => {
-        apiClient.get(`/banners/`)
-            .then(response => setBanners(response.data))
-            .catch(error => console.error("Ошибка при загрузке баннеров:", error));
-        apiClient.get(`/categories/`)
-            .then(response => setCategories(response.data))
-            .catch(error => console.error("Ошибка при загрузке категорий:", error));
-        apiClient.get(`/deal-of-the-day/`)
-            .then(response => {
-                // API вернет 204 No Content, если товара нет. Проверяем это.
-                if (response.status === 200 && response.data) {
-                    setDealProduct(response.data);
-                }
-            })
-            .catch(error => console.error("Ошибка при загрузке товара дня:", error));
+        // Устанавливаем флаг загрузки в true только для самого первого рендера
+        setLoading(true);
+
+        // Загружаем все параллельно для ускорения
+        Promise.all([
+            apiClient.get(`/banners/`),
+            apiClient.get(`/categories/`),
+            apiClient.get(`/deal-of-the-day/`)
+        ]).then(([bannersRes, categoriesRes, dealRes]) => {
+            setBanners(bannersRes.data);
+            setCategories(categoriesRes.data);
+            if (dealRes.status === 200 && dealRes.data) {
+                setDealProduct(dealRes.data);
+            }
+        }).catch(error => {
+            console.error("Ошибка при загрузке начальных данных:", error);
+        });
+        // Этот useEffect должен выполняться только один раз при монтировании компонента
     }, []);
 
-
-    const fetchProducts = useCallback((reset = false) => {
+    // --- ИЗМЕНЕНИЕ: Полностью переработанная логика загрузки продуктов ---
+    // Этот useEffect отвечает за НАЧАЛЬНУЮ загрузку и СБРОС при смене фильтров.
+    useEffect(() => {
         setLoading(true);
-        let url = nextPage;
-        if (reset) {
-            const params = new URLSearchParams();
-            if (selectedCategory) {
-                params.append('category', selectedCategory);
-            }
-            if (currentOrdering) {
-                params.append('ordering', currentOrdering);
-            }
-            url = `/products/?${params.toString()}`;
-        }
-        if (!url) {
-            setLoading(false);
-            return;
-        }
-        apiClient.get(url)
+        // При смене фильтра мы всегда сбрасываем товары и начинаем с первой страницы
+        setProducts([]);
+
+        const params = new URLSearchParams();
+        if (selectedCategory) params.append('category', selectedCategory);
+        if (currentOrdering) params.append('ordering', currentOrdering);
+
+        const initialUrl = `/products/?${params.toString()}`;
+
+        apiClient.get(initialUrl)
             .then(response => {
-                setProducts(prev => reset ? response.data.results : [...prev, ...response.data.results]);
+                setProducts(response.data.results); // ЗАМЕНЯЕМ старый список на новый
+                setNextPage(response.data.next);   // Устанавливаем ссылку на следующую страницу
+            })
+            .catch(error => console.error("Ошибка при начальной загрузке товаров:", error))
+            .finally(() => setLoading(false));
+
+        // Этот хук будет перезапускаться только при изменении категории или сортировки.
+    }, [selectedCategory, currentOrdering]);
+
+
+    // --- ИЗМЕНЕНИЕ: Новая, отдельная функция для ПОДГРУЗКИ следующих страниц ---
+    const loadMoreProducts = useCallback(() => {
+        // Двойная проверка, чтобы избежать лишних запросов
+        if (!nextPage || loading) return;
+
+        setLoading(true);
+        apiClient.get(nextPage)
+            .then(response => {
+                // ДОБАВЛЯЕМ новые товары к существующему списку
+                setProducts(prev => [...prev, ...response.data.results]);
                 setNextPage(response.data.next);
             })
-            .catch(error => console.error("Ошибка при загрузке товаров:", error))
+            .catch(error => console.error("Ошибка при подгрузке товаров:", error))
             .finally(() => setLoading(false));
-    }, [nextPage, selectedCategory, currentOrdering]);
+    }, [nextPage, loading]); // Эта функция пересоздается только когда меняется nextPage или loading
 
-    useEffect(() => {
-        setProducts([]);
-        setNextPage(null);
-        fetchProducts(true);
-    }, [selectedCategory, currentOrdering, fetchProducts]);
 
+    // --- ИЗМЕНЕНИЕ: Intersection Observer теперь вызывает новую функцию loadMoreProducts ---
     const lastProductElementRef = useCallback(node => {
-        if (loading) return;
+        if (loading) return; // Не привязываем наблюдатель во время загрузки
         if (observer.current) observer.current.disconnect();
+
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && nextPage) {
-                fetchProducts(false);
+                loadMoreProducts(); // Вызываем функцию подгрузки
             }
         });
         if (node) observer.current.observe(node);
-    }, [loading, nextPage, fetchProducts]);
+    }, [loading, nextPage, loadMoreProducts]);
 
+
+    // --- Обработчики смены фильтров (остаются БЕЗ ИЗМЕНЕНИЙ) ---
     const handleSelectCategory = (categoryId) => {
         setSearchParams(prev => {
             if (categoryId) {
@@ -93,6 +114,7 @@ const HomePage = () => {
             } else {
                 prev.delete('category');
             }
+            // Сбрасываем сортировку при смене категории для консистентности
             prev.delete('ordering');
             return prev;
         }, { replace: true });
@@ -112,8 +134,8 @@ const HomePage = () => {
         { key: '-price', label: 'Сначала дороже' },
     ];
 
+    // --- JSX-разметка (остается БЕЗ ИЗМЕНЕНИЙ) ---
     return (
-        // Возвращаем корневой div для правильных отступов
         <div className="home-page">
             <PromoCarousel banners={banners} />
             {dealProduct && <DealOfTheDay product={dealProduct} />}
@@ -130,11 +152,14 @@ const HomePage = () => {
 
             <div className="products-grid">
                 {products.map((product, index) => (
-                    <Link to={`/product/${product.id}`} key={product.id} className="product-link">
-                        <div ref={products.length === index + 1 ? lastProductElementRef : null}>
+                    // Обертка <Link> больше не нужна, она мешает ref.
+                    // <Link> нужно будет перенести внутрь ProductCard, если он еще не там.
+                    // Но для исправления бага ее нужно убрать отсюда.
+                    <div ref={products.length === index + 1 ? lastProductElementRef : null} key={product.id}>
+                        <Link to={`/product/${product.id}`} className="product-link">
                             <ProductCard product={product} />
-                        </div>
-                    </Link>
+                        </Link>
+                    </div>
                 ))}
 
                 {loading && (
@@ -144,7 +169,12 @@ const HomePage = () => {
                 )}
             </div>
 
-            {!nextPage && !loading && products.length === 0 && <div className="no-products-message">В этой категории пока нет товаров</div>}
+            {/* --- ИЗМЕНЕНИЕ: Условие для сообщения "нет товаров" стало проще --- */}
+            {!loading && products.length === 0 && (
+                <div className="no-products-message">
+                    В этой категории пока нет товаров
+                </div>
+            )}
 
             <BottomSheet isOpen={isSortMenuOpen} onClose={() => setIsSortMenuOpen(false)}>
                 <div className="sort-menu">

@@ -1,4 +1,4 @@
-# docker-compose.yml - ФИНАЛЬНАЯ ЭТАЛОННАЯ ВЕРСИЯ
+# docker-compose.yml - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ РАЗРАБОТКИ И ПРОДА
 
 services:
   db:
@@ -21,6 +21,10 @@ services:
     build: ./backend
     container_name: bonafide_backend
     volumes:
+      # --- ВОТ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ ---
+      # Эта строка создает "живую" связь между вашим кодом и контейнером.
+      # Теперь все изменения в файлах будут мгновенно отражаться внутри контейнера.
+      - ./backend:/app
       - staticfiles_volume:/app/staticfiles
       - media_volume:/app/media
     expose:
@@ -35,7 +39,10 @@ services:
       - bonafide_network
 
   nginx:
-    build: ./frontend
+    # ИЗМЕНЕНИЕ: Разделяем build context и Dockerfile для ясности
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile
     container_name: bonafide_nginx
     volumes:
       - ./nginx:/etc/nginx/conf.d

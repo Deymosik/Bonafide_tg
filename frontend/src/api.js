@@ -1,34 +1,25 @@
-// frontend/src/api/apiClient.js
+// проект/frontend/src/api/apiClient.js
 import axios from 'axios';
 
 const apiClient = axios.create({
     baseURL: '/api',
 });
 
-// Добавляем перехватчик (interceptor) для всех исходящих запросов
+// ИЗМЕНЕНИЕ: Полностью переработанный перехватчик запросов
 apiClient.interceptors.request.use(
     (config) => {
         const tg = window.Telegram?.WebApp;
-        let telegramId = null;
 
-        // --- ВОТ ГЛАВНОЕ ИЗМЕНЕНИЕ ---
+        // 1. Получаем настоящую строку initData
+        const initData = tg?.initData;
 
-        // 1. Проверяем, есть ли реальные данные Telegram
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            telegramId = tg.initDataUnsafe.user.id;
+        // 2. Если initData существует и не пустая, добавляем ее в заголовок Authorization
+        // Это стандартная практика для передачи токенов или подобных данных.
+        if (initData) {
+            config.headers['Authorization'] = `tma ${initData}`;
         }
-        // 2. Если реальных данных нет, И мы в режиме разработки...
-        else if (process.env.NODE_ENV === 'development') {
-            // ...подставляем фейковый ID для тестов.
-            // Любое число, которое не будет мешать реальным пользователям.
-            console.warn("Telegram ID not found, using mock ID 123456789 for development.");
-            telegramId = 123456789;
-        }
-
-        // 3. Если ID был найден (реальный или фейковый), добавляем его в заголовок.
-        if (telegramId) {
-            config.headers['X-Telegram-ID'] = telegramId;
-        }
+        // 3. Старый небезопасный заголовок X-Telegram-ID полностью удален.
+        // Бэкенд в режиме DEBUG сам подставит ID, если заголовок Authorization отсутствует.
 
         return config;
     },
