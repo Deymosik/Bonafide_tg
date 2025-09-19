@@ -6,6 +6,7 @@ import App from './App';
 import { CartProvider } from './context/CartContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { SettingsProvider } from './context/SettingsContext';
+import './styles/theme.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

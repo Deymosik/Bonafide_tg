@@ -1,6 +1,7 @@
 /* frontend/src/components/AccordionItem.css - ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 .accordion-item-wrapper {
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 12px;
     margin-bottom: 8px;
     overflow: hidden; /* Это важно, чтобы контент не "вылезал" за скругленные углы */
@@ -18,13 +19,13 @@
     font-size: 17px;
     font-weight: 600;
     cursor: pointer;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 .accordion-arrow {
     font-size: 24px;
     font-weight: 300;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     transition: transform 0.3s ease;
     transform: rotate(90deg);
 }
@@ -53,7 +54,7 @@
     padding: 0 16px 16px 16px;
     font-size: 15px;
     line-height: 1.5;
-    color: var(--tg-theme-text-color, #333333);
+    color: var(--app-text-color);
 }
 
 /* --- Стили для списков и текста внутри, БЕЗ ИЗМЕНЕНИЙ --- */
@@ -68,7 +69,7 @@
     margin-bottom: 0;
 }
 .accordion-content-inner a {
-    color: var(--tg-theme-link-color, #007aff);
+    color: var(--app-link-color);
     text-decoration: none;
 }
 
@@ -82,7 +83,7 @@
     display: flex;
     justify-content: space-between;
     padding: 10px 0;
-    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+    border-bottom: 1px solid var(--app-separator-color);
 }
 .spec-list li:last-child {
     border-bottom: none;
@@ -92,7 +93,7 @@
 }
 
 .spec-list .spec-name {
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     padding-right: 16px;
 }
 .spec-list .spec-value {
@@ -117,7 +118,7 @@
     margin-bottom: 0;
 }
 .accordion-content-inner a {
-    color: var(--tg-theme-link-color, #007aff);
+    color: var(--app-link-color);
     text-decoration: none;
 }
 .accordion-content-inner a:hover {

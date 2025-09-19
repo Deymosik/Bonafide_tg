@@ -1,4 +1,5 @@
 /* frontend/src/pages/SearchPage.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 
 .search-page {
     padding: 16px;
@@ -9,7 +10,7 @@
     position: sticky;
     top: 0;
     padding: 8px 0 16px 0;
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: var(--app-bg-color);
     z-index: 100;
 }
 
@@ -25,11 +26,11 @@
     border-radius: 12px;
     border: none;
     font-size: 16px;
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    color: var(--tg-theme-text-color, #000000);
+    background-color: var(--app-secondary-bg-color);
+    color: var(--app-text-color);
 }
 .search-input::placeholder {
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
 }
 .search-input:focus {
     outline: none;
@@ -43,7 +44,7 @@
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
-    color: #8e8e93;
+    color: var(--app-hint-color); /* Заменили жестко заданный цвет на переменную */
 }
 
 /* Результаты поиска */
@@ -68,7 +69,7 @@
 .search-message {
     text-align: center;
     padding: 50px 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     font-size: 16px;
 }
 
@@ -79,7 +80,7 @@
     justify-content: center;
     text-align: center;
     padding: 50px 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     font-size: 16px;
 }
 

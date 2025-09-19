@@ -1,16 +1,18 @@
 /* frontend/src/components/ProductCardSkeleton.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 
 .skeleton-product-card {
     display: flex;
     flex-direction: column;
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 12px;
     overflow: hidden;
     height: 100%;
 }
 
 .skeleton-item {
-    background-color: var(--tg-theme-hint-color, #e0e0e0);
+    /* Используем цвет разделителя для "костей" скелетона */
+    background-color: var(--app-separator-color);
     opacity: 0.5;
     animation: pulse 1.5s infinite ease-in-out;
 }
@@ -20,7 +22,7 @@
     width: 100%;
     padding-top: 75%; /* Соотношение сторон 4:3 */
     position: relative; /* ВАЖНО: Делаем его точкой отсчета для панельки */
-    background-color: var(--tg-theme-hint-color, #e0e0e0);
+    background-color: var(--app-separator-color);
     animation: pulse 1.5s infinite ease-in-out; /* Контейнер тоже должен "пульсировать" */
 }
 
@@ -52,8 +54,8 @@
     height: 20px;
     width: 70px;
     border-radius: 6px;
-    /* Используем более темный цвет, чтобы она выделялась на фоне "фото" */
-    background-color: var(--tg-theme-bg-color, #9b9b9b);
+    /* Используем цвет подсказок, чтобы панелька была темнее фона фото */
+    background-color: var(--app-hint-color);
 }
 
 

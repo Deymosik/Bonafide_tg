@@ -7,6 +7,7 @@ import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import useDebounce from '../utils/useDebounce';
 import { useSettings } from '../context/SettingsContext'; // 1. Импортируем хук настроек
 import LottieAnimation from '../components/LottieAnimation'; // 2. Импортируем компонент анимации
+import defaultSearchAnimation from '../assets/lottie/search-files.json';
 
 import './SearchPage.css';
 import { ReactComponent as SearchIcon } from '../assets/search-icon.svg';
@@ -100,7 +101,10 @@ const SearchPage = () => {
                 {!loading && message && (
                     <div className="search-message">
                         {/* 6. Добавляем анимацию */}
-                        <LottieAnimation src={settings.search_lottie_url} />
+                        <LottieAnimation
+                            src={settings.search_lottie_url}
+                            animationData={defaultSearchAnimation}
+                        />
                         <p>{message}</p>
                     </div>
                 )}

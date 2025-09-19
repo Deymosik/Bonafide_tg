@@ -1,4 +1,5 @@
 /* frontend/src/components/Notification.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 .notification-container {
     position: fixed;
     bottom: 80px; /* Появляется над липкой кнопкой */
@@ -6,7 +7,8 @@
     transform: translateX(-50%);
     padding: 12px 20px;
     border-radius: 12px;
-    color: #fff;
+    /* Используем стандартный цвет текста для кнопок, т.к. фон всегда цветной */
+    color: var(--app-button-text-color);
     font-weight: 500;
     z-index: 2000;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -24,9 +26,11 @@
 
 /* Цвета для разных типов уведомлений */
 .notification-container.success {
-    background-color: #28a745; /* Зеленый */
+    /* Используем нашу глобальную переменную для цвета успеха */
+    background-color: var(--positive-action);
 }
 
 .notification-container.error {
-    background-color: #dc3545; /* Красный */
+    /* Используем нашу глобальную переменную для цвета ошибки/опасности */
+    background-color: var(--app-destructive-text-color);
 }

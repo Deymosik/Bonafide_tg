@@ -1,4 +1,5 @@
-/* Основные стили, использующие переменные Telegram */
+/* frontend/src/index.css */
+/* Основные стили, использующие наши новые глобальные переменные из theme.css */
 body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -6,9 +7,11 @@ body {
     sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Эти переменные Telegram Web Apps API подставит автоматически */
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+
+    /* Используем наши унифицированные переменные для фона и текста всего приложения */
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
+
     -webkit-tap-highlight-color: transparent;
 }
 

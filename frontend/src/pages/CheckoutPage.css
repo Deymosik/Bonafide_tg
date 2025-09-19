@@ -1,15 +1,14 @@
 /* проект/frontend/src/pages/CheckoutPage.css */
-
 .checkout-page {
     padding: 16px;
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: var(--app-bg-color);
 }
 
 .form-title {
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 20px 0;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 .checkout-form {
@@ -21,7 +20,7 @@
 
 /* Стили для секций и полей */
 .form-section {
-    background-color: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 12px;
     padding: 16px;
     animation: fadeIn 0.5s ease;
@@ -31,16 +30,16 @@
     font-size: 20px;
     font-weight: 600;
     margin: 0 0 16px 0;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+    border-bottom: 1px solid var(--app-separator-color);
 }
 
 .form-section-title {
     font-size: 17px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 .form-field {
@@ -55,7 +54,7 @@
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 6px;
-    color: var(--tg-theme-text-color, #333333);
+    color: var(--text-color-secondary);
 }
 
 .form-input {
@@ -63,24 +62,24 @@
     padding: 14px 16px;
     box-sizing: border-box;
     border-radius: 12px;
-    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    border: 1px solid var(--app-secondary-bg-color);
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
     font-size: 16px;
     transition: border-color 0.2s ease;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: var(--tg-theme-button-color, #007aff);
+    border-color: var(--app-button-color);
 }
 
 .form-input.invalid {
-    border-color: var(--tg-theme-destructive-text-color, #ff3b30);
+    border-color: var(--app-destructive-text-color);
 }
 
 .error-message {
-    color: var(--tg-theme-destructive-text-color, #ff3b30);
+    color: var(--app-destructive-text-color);
     font-size: 13px;
     margin: 4px 0 0 8px;
     animation: fadeIn 0.3s;
@@ -103,8 +102,8 @@
 
 .delivery-instructions {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    background-color: var(--tg-theme-secondary-bg-color, #e0e0e0);
+    color: var(--app-hint-color);
+    background-color: var(--app-secondary-bg-color);
     padding: 12px;
     border-radius: 10px;
     margin-top: 12px;
@@ -134,12 +133,12 @@
     justify-content: center;
     padding: 10px 5px;
     border-radius: 12px;
-    border: 2px solid var(--tg-theme-secondary-bg-color, #f0f2f5);
+    border: 2px solid var(--bg-color-tertiary);
     cursor: pointer;
     font-weight: 600;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    color: var(--app-text-color);
+    background-color: var(--bg-color-tertiary);
     text-align: center;
     transition: all 0.2s ease-in-out;
 }
@@ -147,19 +146,19 @@
 .shipping-options label svg {
     width: 70px;
     height: 50px;
-    fill: var(--tg-theme-hint-color, #8e8e93);
+    fill: var(--app-hint-color);
     transition: all 0.2s ease-in-out;
 }
 
 .shipping-options label.active {
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-button-color, #007aff);
-    border-color: var(--tg-theme-button-color, #007aff);
+    background-color: var(--app-bg-color);
+    color: var(--app-button-color);
+    border-color: var(--app-button-color);
     box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
 }
 
 .shipping-options label.active svg {
-    fill: var(--tg-theme-button-color, #007aff);
+    fill: var(--app-button-color);
 }
 
 .shipping-options input[type="radio"] {
@@ -170,7 +169,7 @@
 .form-footer {
     margin-top: 24px;
     padding-top: 16px;
-    border-top: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+    border-top: 1px solid var(--app-separator-color);
 }
 
 .order-summary {
@@ -184,7 +183,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 .summary-row.final-total {
     font-size: 20px;
@@ -208,11 +207,11 @@
 }
 .agreement-checkbox-container label {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     line-height: 1.5;
 }
 .agreement-checkbox-container a {
-    color: var(--tg-theme-link-color, #007aff);
+    color: var(--app-link-color);
     text-decoration: none;
 }
 
@@ -224,11 +223,11 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 .checkout-btn:disabled {
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    color: var(--tg-theme-hint-color, #8e8e93);
+    background-color: var(--bg-color-tertiary);
+    color: var(--app-hint-color);
     cursor: not-allowed;
 }

@@ -1,4 +1,6 @@
 /* frontend/src/pages/FaqPage.css */
+/* Переменные (--app-bg-color, --app-text-color и др.)
+   импортируются из глобального файла /src/styles/theme.css */
 
 .faq-page {
     padding: 16px;
@@ -9,20 +11,20 @@
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 24px 0;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* --- КОНТЕЙНЕР ДЛЯ БЛОКА С ВКЛАДКАМИ --- */
 .info-tabs-section {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-bottom: 1px solid var(--app-secondary-bg-color); /* Использовали secondary-bg как разделитель */
 }
 
 /* --- СЕГМЕНТИРОВАННЫЙ КОНТРОЛ (ПЕРЕКЛЮЧАТЕЛЬ) --- */
 .segmented-control {
     display: flex;
-    background-color: var(--tg-theme-secondary-bg-color, #e0e0e0);
+    background-color: var(--app-secondary-bg-color); /* Можно использовать secondary-bg для фона контрола */
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 24px;
@@ -36,15 +38,15 @@
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .segment-button.active {
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень пока оставим, она не связана с переменными напрямую */
 }
 
 /* --- КОНТЕЙНЕР ДЛЯ КОНТЕНТА ВКЛАДОК --- */
@@ -66,10 +68,10 @@
 .info-section-content {
     font-size: 16px;
     line-height: 1.6;
-    color: var(--tg-theme-text-color, #333333);
+    color: var(--text-color-secondary); /* Используем локальную secondary, если не хотим, чтобы зависело от темы TG */
 }
 .info-section-placeholder {
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     padding: 20px 0;
     text-align: center;
 }
@@ -77,7 +79,7 @@
 .info-section-content p:last-child { margin-bottom: 0; }
 .info-section-content ul, .info-section-content ol { padding-left: 20px; margin: 0 0 1.2em 0; }
 .info-section-content a {
-    color: var(--tg-theme-link-color, #007aff);
+    color: var(--app-link-color);
     text-decoration: none;
     font-weight: 500;
 }
@@ -89,14 +91,14 @@
     text-align: center;
     font-weight: 600;
     margin: 0 0 16px 0; /* Увеличили нижний отступ */
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* --- КОНТЕЙНЕР ДЛЯ АККОРДЕОНА FAQ --- */
 .faq-accordion-section {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-bottom: 1px solid var(--app-secondary-bg-color); /* Использовали secondary-bg как разделитель */
 }
 
 .faq-list {
@@ -107,7 +109,7 @@
 .faq-skeleton {
     width: 100%;
     height: 57px;
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    background-color: var(--app-secondary-bg-color); /* Скелетон также использует secondary-bg */
     border-radius: 12px;
     margin-bottom: 8px;
 }
@@ -119,7 +121,7 @@
 
 .contacts-content p {
     font-size: 15px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     line-height: 1.5;
     margin: 0 0 16px 0;
     text-align: center;
@@ -135,6 +137,6 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }

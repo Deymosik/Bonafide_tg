@@ -1,5 +1,4 @@
 /* проект/frontend/src/pages/CartPage.css */
-
 .cart-page {
     padding: 16px;
 }
@@ -19,11 +18,11 @@
     font-size: 22px;
     font-weight: 600;
     margin: 16px 0 8px 0;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 .empty-cart-subtitle {
     font-size: 16px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     max-width: 280px;
     line-height: 1.5;
     margin: 0 0 24px 0;
@@ -37,8 +36,8 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 /* Заголовок страницы корзины */
@@ -52,7 +51,7 @@
     font-size: 28px;
     font-weight: 700;
     margin: 0;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* Блок с кнопками "Выбрать все" / "Удалить" */
@@ -62,7 +61,7 @@
     align-items: center;
     padding: 8px 0;
     margin-bottom: 16px;
-    border-bottom: 1px solid var(--tg-theme-separator-color, #e0e0e0);
+    border-bottom: 1px solid var(--app-separator-color);
 }
 .cart-actions-header .select-all-container {
     display: flex;
@@ -70,7 +69,7 @@
     gap: 8px;
     font-size: 16px;
     font-weight: 500;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--app-text-color);
     cursor: pointer;
 }
 .cart-actions-header .action-buttons button {
@@ -82,7 +81,7 @@
 .cart-actions-header .action-buttons button svg {
     width: 22px;
     height: 22px;
-    fill: var(--tg-theme-hint-color, #8e8e93);
+    fill: var(--app-hint-color);
 }
 
 /* Список товаров в корзине */
@@ -90,18 +89,14 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /*
-      --- ВОТ ИЗМЕНЕНИЕ ---
-      Увеличили отступ снизу, чтобы "липкий" футер не перекрывал последний товар.
-    */
-    padding-bottom: 240px;
+    padding-bottom: 240px; /* Отступ для "липкого" футера */
 }
 
 .cart-item {
     display: flex;
     align-items: center;
     gap: 16px;
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    background-color: var(--app-secondary-bg-color);
     padding: 12px;
     border-radius: 16px;
     animation: fadeIn 0.3s ease;
@@ -134,7 +129,7 @@
 .cart-item-name {
     font-weight: 600;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -148,19 +143,19 @@
 }
 
 .normal-price {
-    color: var(--tg-theme-text-color, #000);
+    color: var(--app-text-color);
     font-size: 15px;
     font-weight: 500;
 }
 
 .new-price {
-    color: var(--tg-theme-destructive-text-color, #E53935);
+    color: var(--app-destructive-text-color);
     font-size: 16px;
     font-weight: 600;
 }
 
 .old-price {
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     font-size: 14px;
     text-decoration: line-through;
 }
@@ -169,7 +164,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: var(--app-bg-color);
     border-radius: 20px;
     padding: 4px;
     flex-shrink: 0;
@@ -181,7 +176,7 @@
     border-radius: 50%;
     border: none;
     background-color: transparent;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
     font-size: 20px;
     cursor: pointer;
 }
@@ -191,7 +186,7 @@
     font-size: 16px;
     min-width: 20px;
     text-align: center;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 
@@ -201,16 +196,16 @@
     left: 0;
     right: 0;
     padding: 16px;
-    background-color: var(--tg-theme-bg-color, #ffffff);
-    border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    background-color: var(--app-bg-color);
+    border-top: 1px solid var(--app-secondary-bg-color);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
     bottom: calc(60px + env(safe-area-inset-bottom));
     z-index: 1;
 }
 
 .upsell-hint {
-    background-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    color: var(--tg-theme-link-color, #007aff);
+    background-color: var(--app-secondary-bg-color);
+    color: var(--app-link-color);
     padding: 12px;
     border-radius: 12px;
     margin-bottom: 16px;
@@ -231,15 +226,15 @@
     display: flex;
     justify-content: space-between;
     font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 .summary-row.discount span {
-    color: #34c759;
+    color: var(--positive-action);
 }
 .summary-row.final-total {
     font-size: 20px;
     font-weight: 600;
-    border-top: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-top: 1px solid var(--app-secondary-bg-color);
     padding-top: 12px;
     margin-top: 4px;
 }
@@ -252,13 +247,13 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 .checkout-btn:disabled {
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    color: var(--tg-theme-hint-color, #8e8e93);
+    background-color: var(--app-secondary-bg-color);
+    color: var(--app-hint-color);
     cursor: not-allowed;
 }
 
@@ -267,8 +262,8 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    border: 2px solid var(--tg-theme-hint-color, #c7c7cc);
-    background-color: var(--tg-theme-bg-color, #fff);
+    border: 2px solid var(--checkbox-border-color);
+    background-color: var(--app-bg-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -286,14 +281,14 @@
 }
 
 .custom-checkbox.checked {
-    background-color: var(--tg-theme-button-color, #007aff);
-    border-color: var(--tg-theme-button-color, #007aff);
+    background-color: var(--app-button-color);
+    border-color: var(--app-button-color);
 }
 
 .custom-checkbox svg {
     width: 14px;
     height: 14px;
-    stroke: var(--tg-theme-button-text-color, #fff);
+    stroke: var(--app-button-text-color);
     stroke-width: 2.5;
     opacity: 0;
     transform: scale(0.5);

@@ -1,11 +1,14 @@
+/* frontend/src/components/RelatedProductCard.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
+
 .related-card {
     display: flex;
     flex-direction: column;
     width: 140px; /* Компактная ширина */
     flex-shrink: 0;
     text-decoration: none;
-    color: var(--tg-theme-text-color);
-    background-color: var(--tg-theme-secondary-bg-color);
+    color: var(--app-text-color);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 12px;
     overflow: hidden;
     transition: transform 0.2s ease;
@@ -55,7 +58,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    /* Можно использовать цвет фона или чуть более темный для контраста */
-    background-color: var(--tg-theme-hint-color, #e0e0e0);
+    /* Используем цвет разделителя для нейтрального фона-плейсхолдера */
+    background-color: var(--app-separator-color);
     opacity: 0.5;
 }

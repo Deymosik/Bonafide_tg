@@ -1,3 +1,6 @@
+/* проект/frontend/src/pages/HomePage.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
+
 .home-page {
     padding: 0;
 }
@@ -13,14 +16,14 @@
 .no-products-message {
     text-align: center;
     padding: 40px 20px;
-    color: var(--tg-theme-hint-color, #999999);
+    color: var(--app-hint-color);
     grid-column: 1 / -1; /* Занимает всю ширину грида */
 }
 
 .end-of-list {
     text-align: center;
     padding: 20px;
-    color: var(--tg-theme-hint-color, #999999);
+    color: var(--app-hint-color);
 }
 .product-link {
     text-decoration: none; /* Убираем подчеркивание */
@@ -32,8 +35,8 @@
     right: 20px;
     width: 60px;
     height: 60px;
-    background-color: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -48,8 +51,8 @@
     position: absolute;
     top: 0;
     right: 0;
-    background-color: red;
-    color: white;
+    background-color: var(--app-destructive-text-color); /* Используем цвет для "опасных" или акцентных действий */
+    color: var(--app-button-text-color); /* Предполагаем, что контрастный цвет для кнопок (обычно белый) подойдет */
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -68,14 +71,12 @@
     padding: 0 0 0 12px;
     position: sticky;
     top: 0;
-    /* Добавляем fallback цвет для фона */
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: var(--app-bg-color);
     z-index: 100;
 }
 
 .sort-button {
-    /* Добавляем fallback цвет для фона кнопки */
-    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    background: var(--app-secondary-bg-color);
     border: none;
     border-radius: 12px;
     height: 40px;
@@ -90,8 +91,7 @@
 .sort-button svg {
     width: 20px;
     height: 20px;
-    /* Добавляем fallback цвет для иконки */
-    fill: var(--tg-theme-text-color, #000000);
+    fill: var(--app-text-color);
     transition: transform 0.2s ease;
 }
 
@@ -110,25 +110,22 @@
 .category-chip {
     padding: 8px 16px;
     border-radius: 20px;
-    /* Добавляем fallback цвет для фона */
-    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    /* Добавляем fallback цвет для текста */
-    color: var(--tg-theme-text-color, #000000);
+    background: var(--app-secondary-bg-color);
+    color: var(--app-text-color);
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
 }
 
 .category-chip.active {
-    /* Добавляем fallback цвета для активной категории */
-    background: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 .no-products-found {
     text-align: center;
     padding: 40px;
-    color: var(--tg-theme-hint-color);
+    color: var(--app-hint-color);
 }
 
 /* Стили для меню сортировки */
@@ -147,10 +144,9 @@
     align-items: center;
 }
 .sort-option:active {
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.1); /* Оставляем как есть, это цвет состояния, а не темы */
 }
 .sort-option.active {
-    /* Добавляем fallback цвет для активного пункта */
-    color: var(--tg-theme-button-color, #007aff);
+    color: var(--app-button-color);
     font-weight: 600;
 }

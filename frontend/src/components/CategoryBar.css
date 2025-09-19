@@ -1,4 +1,5 @@
 /* frontend/src/components/CategoryBar.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 
 /* Главный контейнер, который будет растягиваться */
 .category-bar-wrapper {
@@ -18,7 +19,7 @@
 }
 
 .category-bar-button {
-    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    background: var(--app-secondary-bg-color);
     border: none;
     border-radius: 50%;
     height: 40px;
@@ -31,29 +32,29 @@
 .category-bar-button svg {
     width: 20px;
     height: 20px;
-    fill: var(--tg-theme-text-color, #000000);
+    fill: var(--app-text-color);
 }
 
 .category-chip {
     padding: 8px 16px;
     border-radius: 20px;
-    background: var(--tg-theme-secondary-bg-color, #f0f2f5);
-    color: var(--tg-theme-text-color, #000000);
+    background: var(--app-secondary-bg-color);
+    color: var(--app-text-color);
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
 }
 .category-chip.active {
-    background: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 /* Чип с родительской категорией, чтобы он был кликабельным */
 .category-chip.current-parent-chip {
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-hint-color, #8e8e93);
-    border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+    background: var(--app-bg-color);
+    color: var(--app-hint-color);
+    border: 1px solid var(--app-separator-color);
 }
 
 /* Контейнер для скролла - теперь он будет правильно ограничен */

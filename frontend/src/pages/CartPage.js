@@ -8,6 +8,7 @@ import FreeShippingProgressBar from '../components/FreeShippingProgressBar';
 import LottieAnimation from '../components/LottieAnimation';
 import { ReactComponent as CheckIcon } from '../assets/check-icon.svg';
 import { ReactComponent as TrashIcon } from '../assets/clear-cart-icon.svg';
+import defaultCartAnimation from '../assets/lottie/empty-cart.json';
 import './CartPage.css';
 
 const CustomCheckbox = ({ checked, onChange }) => (
@@ -69,7 +70,10 @@ const CartPage = () => {
     if (cartItems.length === 0) {
         return (
             <div className="cart-page empty">
-                <LottieAnimation src={settings.cart_lottie_url} />
+                <LottieAnimation
+                    src={settings.cart_lottie_url}
+                    animationData={defaultCartAnimation}
+                />
                 <h2 className="empty-cart-title">Ваша корзина пуста</h2>
                 <p className="empty-cart-subtitle">Похоже, вы еще ничего не добавили. Давайте это исправим!</p>
                 <button className="empty-cart-button" onClick={() => navigate('/')}>

@@ -1,0 +1,46 @@
+/* Глобальная палитра и переменные темы для всего приложения */
+:root {
+    /* ========================================= */
+    /*      1. ЛОКАЛЬНАЯ ЦВЕТОВАЯ ПАЛИТРА        */
+    /* ========================================= */
+    /* Эти переменные определяют основной дизайн вашего приложения
+       и используются как значения по умолчанию (фолбэки). */
+
+    /* Акцентные и функциональные цвета */
+    --primary-accent: #007aff;
+    --primary-accent-contrast: #ffffff;
+    --destructive-action: #ff3b30;
+    --positive-action: #34c759;
+    --link-color: #007aff;
+
+    /* Текстовые цвета */
+    --text-color-main: #000000;
+    --text-color-secondary: #333333;
+    --text-color-hint: #8e8e93;
+
+    /* Фоны */
+    --bg-color-main: #ffffff;
+    --bg-color-secondary: #f7f7f7;
+    --bg-color-tertiary: #f0f2f5;
+
+    /* Разделители и границы */
+    --separator-color: #eee;
+    --checkbox-border-color: #c7c7cc;
+
+    /* ========================================= */
+    /*      2. ИНТЕГРАЦИЯ С ТЕМОЙ TELEGRAM       */
+    /* ========================================= */
+    /* Эти "прикладные" переменные используются во всем приложении.
+       Они сначала пытаются взять цвет из Telegram, а если его нет —
+       используют значение из вашей локальной палитры. */
+
+    --app-bg-color: var(--tg-theme-bg-color, var(--bg-color-main));
+    --app-secondary-bg-color: var(--tg-theme-secondary-bg-color, var(--bg-color-secondary));
+    --app-text-color: var(--tg-theme-text-color, var(--text-color-main));
+    --app-hint-color: var(--tg-theme-hint-color, var(--text-color-hint));
+    --app-link-color: var(--tg-theme-link-color, var(--link-color));
+    --app-button-color: var(--tg-theme-button-color, var(--primary-accent));
+    --app-button-text-color: var(--tg-theme-button-text-color, var(--primary-accent-contrast));
+    --app-destructive-text-color: var(--tg-theme-destructive-text-color, var(--destructive-action));
+    --app-separator-color: var(--tg-theme-separator-color, var(--separator-color));
+}

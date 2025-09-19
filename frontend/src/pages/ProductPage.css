@@ -1,4 +1,5 @@
 /* frontend/src/pages/ProductPage.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 
 .product-page {
     padding-bottom: 80px; /* Оставляем место для липкой кнопки */
@@ -31,28 +32,28 @@
 .price-main-current {
     font-size: 28px;
     font-weight: 700;
-    color: var(--tg-theme-destructive-text-color, #E53935);
+    color: var(--app-destructive-text-color);
 }
 
 /* Обычная цена (когда нет скидки) */
 .price-main-regular {
     font-size: 28px;
     font-weight: 700;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* Старая (зачеркнутая) цена */
 .price-main-old {
     font-size: 20px;
     font-weight: 600;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     text-decoration: line-through;
 }
 
 /* Значок с процентом скидки */
 .discount-badge-page {
-    background-color: var(--tg-theme-destructive-text-color, #E53935);
-    color: #ffffff;
+    background-color: var(--app-destructive-text-color);
+    color: var(--app-button-text-color); /* Белый текст хорошо контрастирует с красным фоном */
     padding: 4px 8px;
     border-radius: 8px;
     font-size: 14px;
@@ -82,7 +83,7 @@
     font-size: 20px;
     margin-bottom: 8px;
     padding-bottom: 4px;
-    border-bottom: 2px solid var(--tg-theme-secondary-bg-color, #eee);
+    border-bottom: 2px solid var(--app-separator-color);
 }
 
 .spec-list {
@@ -92,7 +93,7 @@
 
 .spec-list li {
     padding: 8px 0;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+    border-bottom: 1px solid var(--app-separator-color);
 }
 
 .spec-list li:last-child {
@@ -106,7 +107,7 @@
     left: 0;
     right: 0;
     padding: 12px;
-    background-color: var(--tg-theme-bg-color, #fff);
+    background-color: var(--app-bg-color);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     /* Анимация для плавного появления */
     transition: all 0.3s ease-in-out;
@@ -121,8 +122,8 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #fff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 
@@ -147,15 +148,15 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    background-color: var(--tg-theme-button-color, #007aff);
-    color: var(--tg-theme-button-text-color, #fff);
+    background-color: var(--app-button-color);
+    color: var(--app-button-text-color);
 }
 
 /* Контейнер для степпера "+/-" */
 .quantity-stepper {
     display: flex;
     align-items: center;
-    background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 12px;
 }
 
@@ -165,7 +166,7 @@
     height: 100%;
     border: none;
     background-color: transparent;
-    color: var(--tg-theme-button-color, #007aff); /* Делаем кнопки в цвет акцента */
+    color: var(--app-button-color); /* Делаем кнопки в цвет акцента */
     font-size: 24px;
     font-weight: 500;
     cursor: pointer;
@@ -180,7 +181,7 @@
     padding: 0 8px; /* Небольшие отступы по бокам */
     font-size: 18px;
     font-weight: 600;
-    color: var(--tg-theme-text-color);
+    color: var(--app-text-color);
 }
 
 /* Стили для аудиоплеера */
@@ -212,11 +213,11 @@
     height: 100px;
     flex-shrink: 0; /* Предотвращает сжатие карточек */
 
-    background-color: var(--tg-theme-secondary-bg-color, #f3f3f3);
+    background-color: var(--app-secondary-bg-color);
     border-radius: 16px;
     overflow: hidden;
     text-decoration: none;
-    color: var(--tg-theme-text-color);
+    color: var(--app-text-color);
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     transition: transform 0.2s ease;
 }
@@ -318,7 +319,7 @@
 
 /* Стиль для активного, текущего цвета */
 .color-swatch.active {
-    border-color: var(--tg-theme-button-color, #007aff); /* Рамка в цвет акцента темы */
+    border-color: var(--app-button-color); /* Рамка в цвет акцента темы */
     cursor: default; /* Убираем курсор-руку, т.к. на него нельзя нажать */
 }
 .color-swatch.active:active {
@@ -362,7 +363,7 @@
 }
 
 .product-description-content a {
-    color: var(--tg-theme-link-color, #007aff);
+    color: var(--app-link-color);
     text-decoration: none;
 }
 .product-description-content a:hover {
@@ -396,13 +397,14 @@
     flex-shrink: 0;
 
     /* Делаем фон в цвет второстепенного фона страницы */
-    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    background-color: var(--app-secondary-bg-color);
 }
 
 .favorite-button-page.active svg {
-    fill: var(--tg-theme-button-color, #ff3b30); /* Активный цвет как у кнопки */
+    /* Для активного лайка лучше подходит "разрушительный" (красный) цвет */
+    fill: var(--app-destructive-text-color);
 }
 
 .favorite-button-page:not(.active) svg {
-    fill: var(--tg-theme-text-color, #3c3c43); /* Неактивный цвет как у текста */
+    fill: var(--app-text-color); /* Неактивный цвет как у текста */
 }

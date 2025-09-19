@@ -1,7 +1,10 @@
+/* frontend/src/components/ProductCard.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
+
 .product-card {
     display: flex;
     flex-direction: column;
-    background-color: var(--tg-theme-secondary-bg-color, #f3f3f3); /* Цвет фона карточки */
+    background-color: var(--app-secondary-bg-color); /* Цвет фона карточки */
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
@@ -16,7 +19,8 @@
     width: 100%;
     /* Соотношение сторон 4:3 */
     padding-top: 75%;
-    background-color: #e0e0e0; /* Фон для загружающихся картинок */
+    /* Фон для загружающихся картинок */
+    background-color: var(--app-secondary-bg-color);
 
     /* ИЗМЕНЕНИЕ: Делаем этот блок точкой отсчета для дочерних абсолютных элементов */
     position: relative;
@@ -52,7 +56,7 @@
     font-size: 18px;
     font-weight: 600;
     margin: 0; /* Убрали нижний отступ, т.к. панелек под ценой больше нет */
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* ИЗМЕНЕНИЕ: Полностью новые стили для позиционирования панелек */
@@ -79,7 +83,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    background-color: #e0e0e0;
+    background-color: var(--app-secondary-bg-color);
 }
 
 /* --- НОВЫЕ СТИЛИ ДЛЯ ЦЕН (ДОБАВИТЬ В КОНЕЦ) --- */
@@ -95,20 +99,20 @@
 .price-current {
     font-size: 18px;
     font-weight: 600;
-    color: var(--tg-theme-destructive-text-color, #E53935); /* Яркий акцентный цвет */
+    color: var(--app-destructive-text-color); /* Яркий акцентный цвет */
 }
 
 /* Обычная цена (когда нет скидки) */
 .price-regular {
     font-size: 18px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--app-text-color);
 }
 
 /* Старая (зачеркнутая) цена */
 .price-old {
     font-size: 14px;
     font-weight: 500;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
     text-decoration: line-through; /* Зачеркивание */
 }

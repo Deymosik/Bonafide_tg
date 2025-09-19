@@ -1,4 +1,5 @@
 /* frontend/src/components/TabBar.css */
+/* Переменные импортируются из глобального файла /src/styles/theme.css */
 .tab-bar {
     position: fixed;
     bottom: 0;
@@ -6,8 +7,8 @@
     right: 0;
     height: 60px; /* Стандартная высота для Tab Bar */
 
-    /* Используем цвет фона темы, но с небольшой прозрачностью для "стеклянного" эффекта */
-    background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
+    /* Используем вторичный цвет фона темы. Для "стеклянного" эффекта может потребоваться RGBA с прозрачностью. */
+    background-color: var(--app-secondary-bg-color);
 
     /* Включаем размытие фона под панелью (для iOS и современных браузеров) */
     -webkit-backdrop-filter: blur(10px);
@@ -30,15 +31,17 @@
     height: 100%;
 
     /* Цвет неактивной иконки и текста */
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--app-hint-color);
+    transition: color 0.2s ease; /* Добавляем плавный переход цвета */
 }
 
 .tab-bar-item svg {
     width: 24px;
     height: 24px;
-    fill: var(--tg-theme-secondary-bg-color, #f8f8f8);
+    /* Иконка будет наследовать цвет текста своего родителя (.tab-bar-item) */
+    fill: var(--app-secondary-bg-color);
     margin-bottom: 2px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .tab-bar-item span {
@@ -49,11 +52,10 @@
 /* Стили для АКТИВНОЙ кнопки */
 .tab-bar-item.active {
     /* Цвет активной иконки и текста */
-    color: var(--tg-theme-button-color, #007aff);
+    color: var(--app-button-color);
 }
 
 .tab-bar-item.active svg {
-
     transform: scale(1.1); /* Слегка увеличиваем активную иконку */
 }
 
@@ -66,8 +68,8 @@
     position: absolute;
     top: -4px;
     right: -8px;
-    background-color: red;
-    color: white;
+    background-color: var(--app-destructive-text-color);
+    color: var(--app-button-text-color);
     font-size: 10px;
     font-weight: bold;
     width: 16px;
@@ -76,5 +78,5 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--tg-theme-secondary-bg-color, #f8f8f8); /* Рамка в цвет фона панели */
+    border: 2px solid var(--app-secondary-bg-color); /* Рамка в цвет фона панели */
 }

@@ -13,6 +13,7 @@ import { useTelegram } from './utils/telegram';
 import { useNotification } from './context/NotificationContext';
 import CheckoutPage from './pages/CheckoutPage';
 import './App.css';
+import './styles/theme.css';
 
 
 function App() {
