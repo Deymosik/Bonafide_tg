@@ -69,7 +69,7 @@
     top: -4px;
     right: -8px;
     background-color: var(--app-destructive-text-color);
-    color: var(--app-button-text-color);
+    color: var(--primary-accent-contrast);
     font-size: 10px;
     font-weight: bold;
     width: 16px;

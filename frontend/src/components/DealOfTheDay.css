@@ -128,7 +128,7 @@
     top: 10px;
     left: 10px;
     background-color: var(--app-destructive-text-color); /* Используем семантическую переменную для акцента */
-    color: var(--app-button-text-color); /* Белый цвет из темы для контраста */
+    color: var(--primary-accent-contrast); /* Белый цвет из темы для контраста */
     padding: 4px 8px;
     border-radius: 8px;
     font-size: 14px;

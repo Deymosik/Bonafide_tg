@@ -138,7 +138,7 @@
     font-weight: 600;
     font-size: 16px;
     color: var(--app-text-color);
-    background-color: var(--bg-color-tertiary);
+    background-color: var(--app-bg-color);
     text-align: center;
     transition: all 0.2s ease-in-out;
 }
@@ -227,7 +227,7 @@
     color: var(--app-button-text-color);
 }
 .checkout-btn:disabled {
-    background-color: var(--bg-color-tertiary);
+    background-color: var(--app-secondary-bg-color);
     color: var(--app-hint-color);
     cursor: not-allowed;
 }

@@ -204,7 +204,7 @@ ${summary}
                             minLength: {value: 18, message: 'Введите номер полностью'}
                         }}
                                     render={({field}) => <IMaskInput {...field} id="phone" placeholder="Номер телефона"
-                                                                     mask="+{0} (000) 000-00-00"
+                                                                     mask="+{7} (000) 000-00-00"
                                                                      className={`form-input ${errors.phone ? 'invalid' : ''}`}
                                                                      onAccept={(value) => field.onChange(value)}/>}
                         />
