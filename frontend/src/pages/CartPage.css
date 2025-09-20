@@ -149,7 +149,7 @@
 }
 
 .new-price {
-    color: var(--app-destructive-text-color);
+    color: var(--app-button-color);
     font-size: 16px;
     font-weight: 600;
 }

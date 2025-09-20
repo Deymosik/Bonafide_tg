@@ -99,7 +99,7 @@
 .price-current {
     font-size: 18px;
     font-weight: 600;
-    color: var(--app-destructive-text-color); /* Яркий акцентный цвет */
+    color: var(--app-button-color); /* Яркий акцентный цвет */
 }
 
 /* Обычная цена (когда нет скидки) */

@@ -32,7 +32,7 @@
 .price-main-current {
     font-size: 28px;
     font-weight: 700;
-    color: var(--app-destructive-text-color);
+    color: var(--app-button-color);
 }
 
 /* Обычная цена (когда нет скидки) */
@@ -52,7 +52,7 @@
 
 /* Значок с процентом скидки */
 .discount-badge-page {
-    background-color: var(--app-destructive-text-color);
+    background-color: var(--app-button-color);
     color: var(--app-button-text-color); /* Белый текст хорошо контрастирует с красным фоном */
     padding: 4px 8px;
     border-radius: 8px;

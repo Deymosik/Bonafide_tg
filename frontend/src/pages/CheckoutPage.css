@@ -133,7 +133,7 @@
     justify-content: center;
     padding: 10px 5px;
     border-radius: 12px;
-    border: 2px solid var(--bg-color-tertiary);
+    border: 2px solid var(--app-bg-color);
     cursor: pointer;
     font-weight: 600;
     font-size: 16px;
