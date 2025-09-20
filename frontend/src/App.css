@@ -1,21 +1,11 @@
-/* проект/frontend/src/App.css */
-
 .App {
-    min-height: 100vh;
-
-    /*
-      --- ИЗМЕНЕНИЕ ---
-      Добавляем "умные" отступы, которые будут работать только на устройствах с "чёлкой".
-      На обычных экранах эти значения будут равны 0.
-      Это основной отступ для всего контента.
-    */
-    padding-top: env(safe-area-inset-top);
+    min-height: 100vh; /* Приложение занимает всю высоту экрана */
 }
 
 body {
     touch-action: manipulation;
 }
-
 .page-content {
     flex-grow: 1;
+    /* Здесь НЕТ padding-bottom */
 }

@@ -136,7 +136,7 @@ const HomePage = () => {
 
     // --- JSX-разметка (остается БЕЗ ИЗМЕНЕНИЙ) ---
     return (
-        <div className="home-page">
+        <div className="home-page sticky-top-safe">
             <PromoCarousel banners={banners} />
             {dealProduct && <DealOfTheDay product={dealProduct} />}
             <div className="filters-bar">

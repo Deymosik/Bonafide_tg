@@ -70,7 +70,7 @@
     gap: 12px;
     padding: 0 0 0 12px;
     position: sticky;
-    top: env(safe-area-inset-top);
+    top: 0;
     background-color: var(--app-bg-color);
     z-index: 100;
 }
