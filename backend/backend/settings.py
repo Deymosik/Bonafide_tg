@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'imagekit',
     'django_cleanup.apps.CleanupConfig',
-
+    'colorfield',
     # Ваше приложение
     'shop',
 ]

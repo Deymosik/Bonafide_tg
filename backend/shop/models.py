@@ -5,12 +5,14 @@ from django_ckeditor_5.fields import CKEditor5Field
 from django.db.models import Case, When, F, DecimalField
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from colorfield.fields import ColorField
 
 # --- Модель InfoPanel (без изменений) ---
 class InfoPanel(models.Model):
     name = models.CharField("Название", max_length=50)
-    color = models.CharField("Цвет фона (HEX, например #FF0000)", max_length=7, default="#444444")
-    text_color = models.CharField("Цвет текста (HEX, например #FFFFFF)", max_length=7, default="#FFFFFF")
+    color = ColorField("Цвет фона", default="#444444")
+    # Заменяем CharField на ColorField
+    text_color = ColorField("Цвет текста", default="#FFFFFF")
 
     def __str__(self):
         return self.name
