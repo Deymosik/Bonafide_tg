@@ -25,7 +25,7 @@ const DealOfTheDay = ({ product }) => {
     const discountPercent = hasDealPrice ? Math.round(((price - dealPrice) / price) * 100) : 0;
 
     return (
-        <Link to={`/product/${product.id}`} className="deal-container sticky-top-safe">
+        <Link to={`/product/${product.id}`} className="deal-container">
             <div className="deal-image" style={{ backgroundImage: `url(${product.main_image_thumbnail_url})` }}>
                 {/* Показываем значок скидки, только если она есть */}
                 {discountPercent > 0 && (

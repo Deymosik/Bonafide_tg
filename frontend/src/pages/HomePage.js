@@ -128,7 +128,7 @@ const HomePage = () => {
     ];
 
     return (
-        <div className="home-page">
+        <div className="home-page sticky-top-safe">
             {/*
               --- ФИНАЛЬНАЯ ЛОГИКА ОТОБРАЖЕНИЯ ---
               Скелетон сториз зависит ТОЛЬКО от loadingInitialData
@@ -139,7 +139,7 @@ const HomePage = () => {
             {/* Товар дня зависит только от своего наличия */}
             {dealProduct && <DealOfTheDay product={dealProduct} />}
 
-            <div className="filters-bar sticky-top-safe">
+            <div className="filters-bar">
                 <button className="sort-button" onClick={() => setIsSortMenuOpen(true)}>
                     <SortIcon />
                 </button>
