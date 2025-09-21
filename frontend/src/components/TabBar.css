@@ -32,9 +32,8 @@
 }
 
 .tab-bar-item svg {
-    width: 24px;
-    height: 24px;
-    /* Иконка будет наследовать цвет текста своего родителя (.tab-bar-item) */
+    width: 20px;
+    height: 20px;
     fill: var(--app-secondary-bg-color);
     margin-bottom: 2px;
     transition: transform 0.2s ease;
