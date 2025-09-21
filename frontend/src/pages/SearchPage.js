@@ -67,9 +67,12 @@ const SearchPage = () => {
 
     return (
         <div className="search-page sticky-top-safe">
+            <div className="search-header">
+                <h1>Поиск</h1>
+            </div>
             <div className="search-bar-container">
                 <div className="search-input-wrapper">
-                    <SearchIcon className="search-input-icon" />
+                    <SearchIcon className="search-input-icon"/>
                     <input
                         ref={inputRef}
                         type="text"
@@ -84,7 +87,7 @@ const SearchPage = () => {
             <div className="search-results">
                 {loading && (
                     <div className="products-grid">
-                        {[...Array(6)].map((_, i) => <ProductCardSkeleton key={`skeleton-${i}`} />)}
+                        {[...Array(6)].map((_, i) => <ProductCardSkeleton key={`skeleton-${i}`}/>)}
                     </div>
                 )}
 
@@ -92,7 +95,7 @@ const SearchPage = () => {
                     <div className="products-grid">
                         {results.map(product => (
                             <Link to={`/product/${product.id}`} key={product.id} className="product-link">
-                                <ProductCard product={product} />
+                                <ProductCard product={product}/>
                             </Link>
                         ))}
                     </div>

@@ -7,6 +7,19 @@
     padding-bottom: 32px;
 }
 
+.faq-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.faq-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--app-text-color);
+}
+
 .faq-title {
     font-size: 28px;
     font-weight: 700;

@@ -39,7 +39,9 @@ const FaqPage = () => {
 
     return (
         <div className="faq-page sticky-top-safe">
-
+            <div className="faq-header">
+                <h1>Информация</h1>
+            </div>
             {/* Блок с переключателем и контентом вкладок */}
             <div className="info-tabs-section">
                 <div className="segmented-control">
@@ -57,18 +59,18 @@ const FaqPage = () => {
                 <div className="content-container">
                     {activeTab === 'about' && (
                         <div className="content-tab active" key="about">
-                            <InfoCarousel images={settings.images} />
-                            <SectionContent content={settings.about_us_section} />
+                            <InfoCarousel images={settings.images}/>
+                            <SectionContent content={settings.about_us_section}/>
                         </div>
                     )}
                     {activeTab === 'delivery' && (
                         <div className="content-tab active" key="delivery">
-                            <SectionContent content={settings.delivery_section} />
+                            <SectionContent content={settings.delivery_section}/>
                         </div>
                     )}
                     {activeTab === 'warranty' && (
                         <div className="content-tab active" key="warranty">
-                            <SectionContent content={settings.warranty_section} />
+                            <SectionContent content={settings.warranty_section}/>
                         </div>
                     )}
                 </div>
@@ -85,7 +87,7 @@ const FaqPage = () => {
                     <div className="faq-list">
                         {faqItems.map(item => (
                             <AccordionItem key={item.id} title={item.question}>
-                                <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+                                <div dangerouslySetInnerHTML={{__html: item.answer}}/>
                             </AccordionItem>
                         ))}
                     </div>
