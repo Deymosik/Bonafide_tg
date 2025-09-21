@@ -129,19 +129,22 @@ const HomePage = () => {
 
     return (
         <div className="home-page sticky-top-safe">
+            <div className="home-header">
+                <h1>Главная</h1>
+            </div>
             {/*
               --- ФИНАЛЬНАЯ ЛОГИКА ОТОБРАЖЕНИЯ ---
               Скелетон сториз зависит ТОЛЬКО от loadingInitialData
             */}
-            {loadingInitialData && <PromoCarouselSkeleton />}
-            {!loadingInitialData && banners.length > 0 && <PromoCarousel banners={banners} />}
+            {loadingInitialData && <PromoCarouselSkeleton/>}
+            {!loadingInitialData && banners.length > 0 && <PromoCarousel banners={banners}/>}
 
             {/* Товар дня зависит только от своего наличия */}
-            {dealProduct && <DealOfTheDay product={dealProduct} />}
+            {dealProduct && <DealOfTheDay product={dealProduct}/>}
 
             <div className="filters-bar">
                 <button className="sort-button" onClick={() => setIsSortMenuOpen(true)}>
-                    <SortIcon />
+                    <SortIcon/>
                 </button>
                 <CategoryBar
                     categories={categories}
@@ -154,7 +157,7 @@ const HomePage = () => {
                 {products.map((product, index) => (
                     <div ref={products.length === index + 1 ? lastProductElementRef : null} key={product.id}>
                         <Link to={`/product/${product.id}`} className="product-link">
-                            <ProductCard product={product} />
+                            <ProductCard product={product}/>
                         </Link>
                     </div>
                 ))}
@@ -162,7 +165,7 @@ const HomePage = () => {
                 {/* Скелетоны товаров зависят ТОЛЬКО от loadingProducts */}
                 {loadingProducts && (
                     [...Array(4)].map((_, i) => (
-                        <ProductCardSkeleton key={`skeleton-${i}`} />
+                        <ProductCardSkeleton key={`skeleton-${i}`}/>
                     ))
                 )}
             </div>
