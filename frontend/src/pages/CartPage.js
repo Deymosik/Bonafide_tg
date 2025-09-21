@@ -84,8 +84,8 @@ const CartPage = () => {
     }
 
     return (
-        <div className="cart-page">
-            <div className="cart-header sticky-top-safe">
+        <div className="cart-page sticky-top-safe">
+            <div className="cart-header">
                 <h1>Корзина</h1>
             </div>
 
