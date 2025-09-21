@@ -41,7 +41,7 @@ const FaqPage = () => {
         <div className="faq-page">
 
             {/* Блок с переключателем и контентом вкладок */}
-            <div className="info-tabs-section">
+            <div className="info-tabs-section sticky-top-safe">
                 <div className="segmented-control">
                     {tabs.map(tab => (
                         <button

@@ -9,17 +9,22 @@ import BottomSheet from '../components/BottomSheet';
 import { ReactComponent as SortIcon } from '../assets/sort-icon.svg';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import DealOfTheDay from '../components/DealOfTheDay';
+import PromoCarouselSkeleton from '../components/PromoCarouselSkeleton';
 
 import './HomePage.css';
 
 const HomePage = () => {
-    // --- БЛОК СОСТОЯНИЙ (БЕЗ ИЗМЕНЕНИЙ) ---
+    // --- ИЗМЕНЕНИЕ: Полное разделение состояний загрузки ---
+    const [loadingInitialData, setLoadingInitialData] = useState(true); // Для баннеров, категорий, товара дня
+    const [loadingProducts, setLoadingProducts] = useState(true); // Только для списка товаров
+    const [loadingMore, setLoadingMore] = useState(false); // Только для подгрузки (бесконечный скролл)
+
+    // --- Остальные состояния без изменений ---
     const [banners, setBanners] = useState([]);
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
     const [dealProduct, setDealProduct] = useState(null);
     const [nextPage, setNextPage] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -28,12 +33,10 @@ const HomePage = () => {
 
     const observer = useRef();
 
-    // --- ИЗМЕНЕНИЕ: Загрузка "статичного" контента (баннеры, категории) вынесена в отдельный useEffect ---
+    // useEffect №1: Загрузка "статичного" контента (баннеры, категории, товар дня)
+    // Эта логика теперь полностью независима.
     useEffect(() => {
-        // Устанавливаем флаг загрузки в true только для самого первого рендера
-        setLoading(true);
-
-        // Загружаем все параллельно для ускорения
+        setLoadingInitialData(true);
         Promise.all([
             apiClient.get(`/banners/`),
             apiClient.get(`/categories/`),
@@ -46,75 +49,65 @@ const HomePage = () => {
             }
         }).catch(error => {
             console.error("Ошибка при загрузке начальных данных:", error);
+        }).finally(() => {
+            setLoadingInitialData(false); // Завершаем ТОЛЬКО эту загрузку
         });
-        // Этот useEffect должен выполняться только один раз при монтировании компонента
-    }, []);
+    }, []); // Выполняется один раз
 
-    // --- ИЗМЕНЕНИЕ: Полностью переработанная логика загрузки продуктов ---
-    // Этот useEffect отвечает за НАЧАЛЬНУЮ загрузку и СБРОС при смене фильтров.
+    // useEffect №2: Загрузка товаров при смене фильтров (категория или сортировка)
     useEffect(() => {
-        setLoading(true);
-        // При смене фильтра мы всегда сбрасываем товары и начинаем с первой страницы
-        setProducts([]);
+        setLoadingProducts(true); // Включаем скелетоны для товаров
+        setProducts([]); // Обязательно сбрасываем товары
+        setNextPage(null); // Сбрасываем следующую страницу
 
         const params = new URLSearchParams();
         if (selectedCategory) params.append('category', selectedCategory);
         if (currentOrdering) params.append('ordering', currentOrdering);
-
         const initialUrl = `/products/?${params.toString()}`;
 
         apiClient.get(initialUrl)
             .then(response => {
-                setProducts(response.data.results); // ЗАМЕНЯЕМ старый список на новый
-                setNextPage(response.data.next);   // Устанавливаем ссылку на следующую страницу
+                setProducts(response.data.results);
+                setNextPage(response.data.next);
             })
             .catch(error => console.error("Ошибка при начальной загрузке товаров:", error))
-            .finally(() => setLoading(false));
-
-        // Этот хук будет перезапускаться только при изменении категории или сортировки.
+            .finally(() => setLoadingProducts(false)); // Выключаем скелетоны для товаров
     }, [selectedCategory, currentOrdering]);
 
-
-    // --- ИЗМЕНЕНИЕ: Новая, отдельная функция для ПОДГРУЗКИ следующих страниц ---
+    // Функция для подгрузки следующих страниц (бесконечный скролл)
     const loadMoreProducts = useCallback(() => {
-        // Двойная проверка, чтобы избежать лишних запросов
-        if (!nextPage || loading) return;
+        if (!nextPage || loadingMore) return;
 
-        setLoading(true);
+        setLoadingMore(true); // Используем отдельный флаг, чтобы не показывать скелетоны
         apiClient.get(nextPage)
             .then(response => {
-                // ДОБАВЛЯЕМ новые товары к существующему списку
                 setProducts(prev => [...prev, ...response.data.results]);
                 setNextPage(response.data.next);
             })
             .catch(error => console.error("Ошибка при подгрузке товаров:", error))
-            .finally(() => setLoading(false));
-    }, [nextPage, loading]); // Эта функция пересоздается только когда меняется nextPage или loading
+            .finally(() => setLoadingMore(false));
+    }, [nextPage, loadingMore]);
 
-
-    // --- ИЗМЕНЕНИЕ: Intersection Observer теперь вызывает новую функцию loadMoreProducts ---
+    // Intersection Observer для вызова loadMoreProducts
     const lastProductElementRef = useCallback(node => {
-        if (loading) return; // Не привязываем наблюдатель во время загрузки
+        // ИЗМЕНЕНИЕ: Не блокируем наблюдатель во время основной загрузки,
+        // но функция loadMoreProducts сама себя заблокирует, если нужно.
         if (observer.current) observer.current.disconnect();
 
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && nextPage) {
-                loadMoreProducts(); // Вызываем функцию подгрузки
+                loadMoreProducts();
             }
         });
         if (node) observer.current.observe(node);
-    }, [loading, nextPage, loadMoreProducts]);
+    }, [nextPage, loadMoreProducts]);
 
 
-    // --- Обработчики смены фильтров (остаются БЕЗ ИЗМЕНЕНИЙ) ---
+    // Обработчики (без изменений)
     const handleSelectCategory = (categoryId) => {
         setSearchParams(prev => {
-            if (categoryId) {
-                prev.set('category', categoryId);
-            } else {
-                prev.delete('category');
-            }
-            // Сбрасываем сортировку при смене категории для консистентности
+            if (categoryId) prev.set('category', categoryId);
+            else prev.delete('category');
             prev.delete('ordering');
             return prev;
         }, { replace: true });
@@ -134,12 +127,19 @@ const HomePage = () => {
         { key: '-price', label: 'Сначала дороже' },
     ];
 
-    // --- JSX-разметка (остается БЕЗ ИЗМЕНЕНИЙ) ---
     return (
-        <div className="home-page sticky-top-safe">
-            <PromoCarousel banners={banners} />
+        <div className="home-page">
+            {/*
+              --- ФИНАЛЬНАЯ ЛОГИКА ОТОБРАЖЕНИЯ ---
+              Скелетон сториз зависит ТОЛЬКО от loadingInitialData
+            */}
+            {loadingInitialData && <PromoCarouselSkeleton />}
+            {!loadingInitialData && banners.length > 0 && <PromoCarousel banners={banners} />}
+
+            {/* Товар дня зависит только от своего наличия */}
             {dealProduct && <DealOfTheDay product={dealProduct} />}
-            <div className="filters-bar">
+
+            <div className="filters-bar sticky-top-safe">
                 <button className="sort-button" onClick={() => setIsSortMenuOpen(true)}>
                     <SortIcon />
                 </button>
@@ -152,9 +152,6 @@ const HomePage = () => {
 
             <div className="products-grid">
                 {products.map((product, index) => (
-                    // Обертка <Link> больше не нужна, она мешает ref.
-                    // <Link> нужно будет перенести внутрь ProductCard, если он еще не там.
-                    // Но для исправления бага ее нужно убрать отсюда.
                     <div ref={products.length === index + 1 ? lastProductElementRef : null} key={product.id}>
                         <Link to={`/product/${product.id}`} className="product-link">
                             <ProductCard product={product} />
@@ -162,15 +159,16 @@ const HomePage = () => {
                     </div>
                 ))}
 
-                {loading && (
+                {/* Скелетоны товаров зависят ТОЛЬКО от loadingProducts */}
+                {loadingProducts && (
                     [...Array(4)].map((_, i) => (
                         <ProductCardSkeleton key={`skeleton-${i}`} />
                     ))
                 )}
             </div>
 
-            {/* --- ИЗМЕНЕНИЕ: Условие для сообщения "нет товаров" стало проще --- */}
-            {!loading && products.length === 0 && (
+            {/* Сообщение "нет товаров" также зависит от loadingProducts */}
+            {!loadingProducts && products.length === 0 && (
                 <div className="no-products-message">
                     В этой категории пока нет товаров
                 </div>

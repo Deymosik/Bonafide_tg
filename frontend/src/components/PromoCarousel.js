@@ -19,7 +19,7 @@ const PromoCarousel = ({ banners }) => {
     }
 
     return (
-        <div className="promo-carousel-container">
+        <div className="promo-carousel-container sticky-top-safe">
             {banners.map(banner => {
                 // 1. ГЛАВНОЕ ИЗМЕНЕНИЕ: Используем новое поле 'image_url' от API.
                 // Оно содержит ссылку на легкое, сжатое webp-превью.

@@ -85,7 +85,7 @@ const CartPage = () => {
 
     return (
         <div className="cart-page">
-            <div className="cart-header">
+            <div className="cart-header sticky-top-safe">
                 <h1>Корзина</h1>
             </div>
 

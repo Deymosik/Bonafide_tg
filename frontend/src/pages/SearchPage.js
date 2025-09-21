@@ -67,7 +67,7 @@ const SearchPage = () => {
 
     return (
         <div className="search-page">
-            <div className="search-bar-container">
+            <div className="search-bar-container sticky-top-safe">
                 <div className="search-input-wrapper">
                     <SearchIcon className="search-input-icon" />
                     <input

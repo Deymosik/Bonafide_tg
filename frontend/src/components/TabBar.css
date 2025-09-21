@@ -5,14 +5,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px; /* Стандартная высота для Tab Bar */
+    height: 50px; /* Стандартная высота для Tab Bar */
 
     /* Используем вторичный цвет фона темы. Для "стеклянного" эффекта может потребоваться RGBA с прозрачностью. */
     background-color: var(--app-secondary-bg-color);
-
-    /* Включаем размытие фона под панелью (для iOS и современных браузеров) */
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
 
     display: flex;
     justify-content: space-around;
