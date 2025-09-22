@@ -67,9 +67,7 @@ const SearchPage = () => {
 
     return (
         <div className="search-page sticky-top-safe">
-            <div className="search-header">
-                <h1>Поиск</h1>
-            </div>
+
             <div className="search-bar-container">
                 <div className="search-input-wrapper">
                     <SearchIcon className="search-input-icon"/>

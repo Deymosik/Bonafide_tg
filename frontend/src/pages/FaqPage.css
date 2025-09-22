@@ -3,20 +3,7 @@
    импортируются из глобального файла /src/styles/theme.css */
 
 .faq-page {
-    padding: 0 16px 16px 32px;
-}
-
-.faq-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.faq-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--app-text-color);
+    padding:16px 16px 32px;
 }
 
 .faq-title {

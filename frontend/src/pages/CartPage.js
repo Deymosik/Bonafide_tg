@@ -85,9 +85,6 @@ const CartPage = () => {
 
     return (
         <div className="cart-page sticky-top-safe">
-            <div className="cart-header">
-                <h1>Корзина</h1>
-            </div>
 
             <div className="cart-actions-header">
                 <div className="select-all-container" onClick={toggleSelectAll}>

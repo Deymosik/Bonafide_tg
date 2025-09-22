@@ -1,6 +1,6 @@
 /* проект/frontend/src/pages/CartPage.css */
 .cart-page {
-    padding: 0 16px 16px 16px;
+    padding:16px;
 }
 
 /* Стили для пустой корзины */
@@ -38,20 +38,6 @@
     cursor: pointer;
     background-color: var(--app-button-color);
     color: var(--app-button-text-color);
-}
-
-/* Заголовок страницы корзины */
-.cart-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.cart-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--app-text-color);
 }
 
 /* Блок с кнопками "Выбрать все" / "Удалить" */

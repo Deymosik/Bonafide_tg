@@ -39,9 +39,6 @@ const FaqPage = () => {
 
     return (
         <div className="faq-page sticky-top-safe">
-            <div className="faq-header">
-                <h1>Информация</h1>
-            </div>
             {/* Блок с переключателем и контентом вкладок */}
             <div className="info-tabs-section">
                 <div className="segmented-control">

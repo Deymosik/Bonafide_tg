@@ -5,19 +5,6 @@
     padding: 0;
 }
 
-.home-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.home-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    color: var(--app-text-color);
-}
-
 .products-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

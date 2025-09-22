@@ -129,13 +129,7 @@ const HomePage = () => {
 
     return (
         <div className="home-page sticky-top-safe">
-            <div className="home-header">
-                <h1>Главная</h1>
-            </div>
-            {/*
-              --- ФИНАЛЬНАЯ ЛОГИКА ОТОБРАЖЕНИЯ ---
-              Скелетон сториз зависит ТОЛЬКО от loadingInitialData
-            */}
+
             {loadingInitialData && <PromoCarouselSkeleton/>}
             {!loadingInitialData && banners.length > 0 && <PromoCarousel banners={banners}/>}
 
