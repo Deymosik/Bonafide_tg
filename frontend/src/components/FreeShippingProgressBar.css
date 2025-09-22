@@ -78,12 +78,12 @@
 
 .shipping-progress-bar.success {
     /* Акцентная рамка */
-    border-color: var(--positive-action);
+    border-color: var(--app-button-color);
 }
 
 .shipping-icon-wrapper.success-icon {
     /* Акцентный фон для иконки */
-    background-color: var(--positive-action);
+    background-color: var(--app-button-color);
     animation: popIn 0.5s ease-out; /* Анимация "празднования" */
 }
 
@@ -92,7 +92,7 @@
 }
 
 .shipping-progress-bar.success .shipping-title {
-    color: var(--positive-action); /* Текст в цвет успеха */
+    color: var(--app-button-color); /* Текст в цвет успеха */
 }
 
 /* --- АНИМАЦИИ --- */

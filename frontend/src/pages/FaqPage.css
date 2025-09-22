@@ -3,8 +3,7 @@
    импортируются из глобального файла /src/styles/theme.css */
 
 .faq-page {
-    padding: 16px;
-    padding-bottom: 32px;
+    padding: 0 16px 16px 32px;
 }
 
 .faq-header {

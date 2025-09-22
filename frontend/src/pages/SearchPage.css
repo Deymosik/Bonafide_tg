@@ -2,7 +2,7 @@
 /* Переменные импортируются из глобального файла /src/styles/theme.css */
 
 .search-page {
-    padding: 16px;
+    padding: 0 16px 16px 16px;
 }
 
 .search-header {
