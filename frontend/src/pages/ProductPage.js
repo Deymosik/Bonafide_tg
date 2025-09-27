@@ -129,49 +129,54 @@ const ProductPage = () => {
             <ProductGallery images={allImagesForGallery} />
 
             <div className="product-details">
-
-                <div className="product-title-header">
-                    <h1 className="product-title">{product.name}</h1>
-                </div>
-
-                <div className="info-panels-product">
-                    {(product.info_panels || []).map(panel => (
-                        <span key={panel.name} className="info-panel"
-                              style={{backgroundColor: panel.color, color: panel.text_color}}>
-                            {panel.name}
-                        </span>
-                    ))}
-                </div>
-
-                {allColorVariations.length > 1 && (
-                    <div className="product-section">
-                        <h2>Цвет</h2>
-                        <div className="color-swatches-container">
-                            {allColorVariations.map(variation => (
-                                <Link
-                                    to={`/product/${variation.id}`}
-                                    key={variation.id}
-                                    className={`color-swatch ${variation.id === product.id ? 'active' : ''}`}
-                                    onClick={(e) => handleColorSwitch(e, variation.id)}
-                                >
-                                    {/* 5. Используем превью для квадратиков */}
-                                    <img src={variation.main_image_thumbnail_url} alt="Color variation"/>
-                                </Link>
+                {/* НАЧАЛО: Новый объединенный блок для основной информации */}
+                <div className="product-header-card">
+                    {/* Инфо-панели теперь наверху */}
+                    {(product.info_panels || []).length > 0 && (
+                        <div className="info-panels-product">
+                            {product.info_panels.map(panel => (
+                                <span key={panel.name} className="info-panel"
+                                      style={{backgroundColor: panel.color, color: panel.text_color}}>
+                        {panel.name}
+                    </span>
                             ))}
                         </div>
-                    </div>
-                )}
-
-                <div className="price-section-main">
-                    {hasDiscount ? (
-                        <>
-                            <span className="price-main-current">{price.toFixed(0)} ₽</span>
-                            <span className="price-main-old">{regularPrice.toFixed(0)} ₽</span>
-                            <span className="discount-badge-page">-{discountPercent}%</span>
-                        </>
-                    ) : (
-                        <span className="price-main-regular">{regularPrice.toFixed(0)} ₽</span>
                     )}
+
+                    {/* Название товара */}
+                    <h1 className="product-title">{product.name}</h1>
+
+                    {/* Секция с вариантами цветов (если они есть) */}
+                    {allColorVariations.length > 1 && (
+                        <div className="color-swatches-section">
+                            <span className="color-swatches-label">Цвет:</span>
+                            <div className="color-swatches-container">
+                                {allColorVariations.map(variation => (
+                                    <Link
+                                        to={`/product/${variation.id}`}
+                                        key={variation.id}
+                                        className={`color-swatch ${variation.id === product.id ? 'active' : ''}`}
+                                        onClick={(e) => handleColorSwitch(e, variation.id)}
+                                    >
+                                        <img src={variation.main_image_thumbnail_url} alt="Color variation"/>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Блок с ценой */}
+                    <div className="price-section-main">
+                        {hasDiscount ? (
+                            <>
+                                <span className="price-main-current">{price.toFixed(0)} ₽</span>
+                                <span className="price-main-old">{regularPrice.toFixed(0)} ₽</span>
+                                <span className="discount-badge-page">-{discountPercent}%</span>
+                            </>
+                        ) : (
+                            <span className="price-main-regular">{regularPrice.toFixed(0)} ₽</span>
+                        )}
+                    </div>
                 </div>
 
                 {product.audio_sample && (

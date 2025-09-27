@@ -25,26 +25,25 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 16px 0;
 }
 
 /* Новая (акционная) цена - делаем ее большой и заметной */
 .price-main-current {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--app-button-color);
 }
 
 /* Обычная цена (когда нет скидки) */
 .price-main-regular {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--app-text-color);
 }
 
 /* Старая (зачеркнутая) цена */
 .price-main-old {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--app-hint-color);
     text-decoration: line-through;
@@ -56,7 +55,7 @@
     color: var(--app-button-text-color); /* Белый текст хорошо контрастирует с красным фоном */
     padding: 4px 8px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
 }
 
@@ -64,7 +63,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 12px;
 }
 /* Код для .info-panel уже должен быть в другом файле, но на всякий случай */
 .info-panel {
@@ -291,7 +289,7 @@
 .color-swatches-container {
     display: flex;
     gap: 12px;
-    padding: 4px 0;
+    padding: 0;
     /* Можно добавить горизонтальный скролл, если цветов будет очень много */
     overflow-x: auto;
     -ms-overflow-style: none;
@@ -303,8 +301,8 @@
 
 /* Сам "квадратик" с цветом */
 .color-swatch {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px; /* Слегка скругленные углы */
     border: 2px solid transparent; /* Прозрачная рамка для выравнивания */
     padding: 2px;
@@ -376,7 +374,6 @@
 
 
 .product-title-header {
-    display: flex;
     justify-content: space-between;
     align-items: flex-start; /* Выравниваем по верху */
     gap: 16px;
@@ -408,3 +405,48 @@
 .favorite-button-page:not(.active) svg {
     fill: var(--app-text-color); /* Неактивный цвет как у текста */
 }
+
+.product-header-card {
+    background-color: var(--app-secondary-bg-color); /* Используем вторичный цвет фона */
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px; /* Отступ от следующей секции */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Легкая тень для объема */
+}
+
+/* 2. Стилизуем заголовок внутри новой карточки */
+.product-header-card .product-title {
+    font-size: 22px; /* Чуть компактнее */
+    font-weight: 600;
+    margin: 0; /* Убираем все отступы */
+    line-height: 1.3;
+}
+
+/* 3. Контейнер для инфо-панелей (размещаем их перед заголовком) */
+.product-header-card .info-panels-product {
+    margin-bottom: 12px; /* Отступ от заголовка */
+    gap: 8px; /* Немного увеличим расстояние между панелями */
+}
+
+/* 4. Секция с выбором цвета */
+.color-swatches-section {
+    margin-top: 16px; /* Отступ от заголовка */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-swatches-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--app-hint-color); /* Приглушенный цвет для подписи */
+}
+
+/* 5. Обновляем стили для блока с ценой */
+.product-header-card .price-section-main {
+    margin: 20px 0 0 0; /* Отступ сверху, убираем остальные */
+    padding-top: 20px;
+    /* Добавляем линию-разделитель для визуального отделения */
+    border-top: 1px solid var(--app-separator-color);
+}
+
