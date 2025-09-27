@@ -26,7 +26,10 @@ const ProductGallery = ({ images, productName }) => {
                 modules={[Pagination, A11y]}
                 spaceBetween={0}
                 slidesPerView={1}
-                pagination={{ clickable: true }}
+                pagination={{
+                    type: 'fraction', // <-- Вот ключевое изменение
+                    clickable: true
+                }}
                 className="product-swiper"
             >
                 {images.map((image, index) => (
