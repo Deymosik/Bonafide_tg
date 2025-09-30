@@ -111,29 +111,36 @@ const CartPage = () => {
             <div className="cart-items">
                 {cartItems.map(item => (
                     <div key={item.id} className="cart-item">
-                        <div className="cart-item-image-container">
-                            <CustomCheckbox
-                                checked={selectedItems.has(item.product.id)}
-                                onChange={() => toggleItemSelection(item.product.id)}
-                            />
-                            <img src={item.product.main_image_thumbnail_url} alt={item.product.name} className="cart-item-img"/>
-                        </div>
-                        <div className="cart-item-info">
-                            <div className="cart-item-name">{item.product.name}</div>
-                            {/* --- ВОТ ИЗМЕНЕНИЕ --- */}
-                            <div className="cart-item-price-container">
-                                {item.discounted_price ? (
-                                    <>
+                        {/* 1. Создаем новый контейнер для верхней части (картинка + инфо) */}
+                        <div className="cart-item-main">
+                            <div className="cart-item-image-container">
+                                <CustomCheckbox
+                                    checked={selectedItems.has(item.product.id)}
+                                    onChange={() => toggleItemSelection(item.product.id)}
+                                />
+                                <img src={item.product.main_image_thumbnail_url} alt={item.product.name}
+                                     className="cart-item-img"/>
+                            </div>
+                            <div className="cart-item-info">
+                                {/* Название теперь может занимать несколько строк */}
+                                <div className="cart-item-name">{item.product.name}</div>
+                                <div className="cart-item-price-container">
+                                    {item.discounted_price ? (
+                                        <>
+                                            <span
+                                                className="new-price">{parseFloat(item.discounted_price).toFixed(0)} ₽</span>
+                                            <span
+                                                className="old-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
+                                        </>
+                                    ) : (
                                         <span
-                                            className="new-price">{parseFloat(item.discounted_price).toFixed(0)} ₽</span>
-                                        <span
-                                            className="old-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
-                                    </>
-                                ) : (
-                                    <span className="normal-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
-                                )}
+                                            className="normal-price">{parseFloat(item.original_price).toFixed(0)} ₽</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
+
+                        {/* 2. Блок с количеством теперь находится отдельно, внизу */}
                         <div className="cart-item-controls">
                             <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>−</button>
                             <span>{item.quantity}</span>
@@ -152,7 +159,7 @@ const CartPage = () => {
                 {/* --- ИСПРАВЛЕНИЕ: Используем upsell_hint из selectionInfo --- */}
                 {selectionInfo.upsell_hint && (
                     <div className="upsell-hint">
-                    ✨ {selectionInfo.upsell_hint}
+                        ✨ {selectionInfo.upsell_hint}
                     </div>
                 )}
 

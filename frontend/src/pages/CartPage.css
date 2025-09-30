@@ -80,12 +80,19 @@
 
 .cart-item {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column; /* ГЛАВНОЕ ИЗМЕНЕНИЕ: располагаем блоки друг под другом */
+    gap: 12px; /* Расстояние между верхним блоком и кнопками +/- */
     background-color: var(--app-secondary-bg-color);
-    padding: 12px;
+    padding: 16px;
     border-radius: 16px;
     animation: fadeIn 0.3s ease;
+}
+
+.cart-item-main {
+    display: flex;
+    gap: 16px;
+    /* Выравниваем по верху, чтобы текст красиво стоял рядом с картинкой */
+    align-items: flex-start;
 }
 
 @keyframes fadeIn {
@@ -96,12 +103,11 @@
 .cart-item-image-container {
     position: relative;
     flex-shrink: 0;
-    margin-right: 16px;
 }
 
 .cart-item-img {
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
     object-fit: cover;
     border-radius: 12px;
     display: block;
@@ -114,63 +120,70 @@
 
 .cart-item-name {
     font-weight: 600;
-    font-size: 16px;
+    font-size: clamp(15px, 4.5vw, 17px);
     color: var(--app-text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Убираем ограничения, позволяя тексту занимать несколько строк */
+    white-space: normal;
+    word-break: break-word; /* Для корректного переноса длинных слов */
+    line-height: 1.3;
 }
 
 .cart-item-price-container {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 8px; /* Добавляем отступ от названия */
 }
 
 .normal-price {
     color: var(--app-text-color);
-    font-size: 15px;
+    font-size: clamp(14px, 4vw, 15px);
     font-weight: 500;
 }
 
 .new-price {
     color: var(--app-button-color);
-    font-size: 16px;
+    font-size: clamp(15px, 4.2vw, 16px);
     font-weight: 600;
 }
 
 .old-price {
     color: var(--app-hint-color);
-    font-size: 14px;
+    font-size: clamp(13px, 3.8vw, 14px);
     text-decoration: line-through;
 }
 
 .cart-item-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background-color: var(--app-bg-color);
-    border-radius: 20px;
+    /* Располагаем его в правом углу карточки */
+    align-self: flex-end;
+    background-color: var(--app-bg-color); /* Фон как у страницы для контраста */
+    border-radius: 24px;
     padding: 4px;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Легкая тень */
 }
 
 .cart-item-controls button {
-    width: 32px;
-    height: 32px;
+    width: 36px;  /* Увеличиваем область нажатия */
+    height: 36px;
     border-radius: 50%;
     border: none;
     background-color: transparent;
     color: var(--app-text-color);
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.cart-item-controls button:active {
+    background-color: rgba(0,0,0,0.05);
 }
 
 .cart-item-controls span {
     font-weight: 600;
-    font-size: 16px;
-    min-width: 20px;
+    font-size: clamp(16px, 4vw, 18px);
+    min-width: 24px; /* Чуть больше места для цифр */
     text-align: center;
     color: var(--app-text-color);
 }
@@ -185,7 +198,7 @@
     background-color: var(--app-bg-color);
     border-top: 1px solid var(--app-secondary-bg-color);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-    bottom: calc(60px + env(safe-area-inset-bottom));
+    bottom: calc(50px + env(safe-area-inset-bottom));
     z-index: 1;
 }
 
