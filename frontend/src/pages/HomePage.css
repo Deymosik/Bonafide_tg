@@ -10,7 +10,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     /* Добавляем отступы здесь, чтобы они не влияли на панель категорий */
-    padding: 12px;
+    padding: 0 12px 12px 12px;
 }
 
 .no-products-message {
@@ -160,7 +160,6 @@
     top: var(--safe-area-inset-top); /* Учитываем "челку" */
     background-color: var(--app-bg-color);
     z-index: 100;
-    border-bottom: 1px solid var(--app-separator-color);
 }
 
 .filter-button {
