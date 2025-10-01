@@ -3,12 +3,28 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.utils.html import format_html
+# 1. ИЗМЕНЕНИЕ: Импортируем forms из django
+from django import forms
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner, ProductInfoCard,
     DiscountRule, ColorGroup, ShopSettings, FaqItem, ShopImage,
     Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem, Order, OrderItem
 )
 
+class MultipleFileInput(forms.FileInput):
+    """
+    Кастомный виджет для загрузки нескольких файлов.
+    Он наследует от FileInput, но переопределяет __init__, чтобы
+    Django не вызывал ошибку ValueError при использовании multiple=True.
+    """
+    def __init__(self, attrs=None):
+        # Просто копируем __init__ из базового класса Widget, удалив проверку
+        if attrs is not None:
+            self.attrs = attrs.copy()
+        else:
+            self.attrs = {}
+
+# --- Все классы Inline остаются без изменений ---
 class FeatureInline(admin.TabularInline):
     model = Feature
     extra = 1
@@ -21,15 +37,22 @@ class ProductCharacteristicInline(admin.TabularInline):
     extra = 1
     verbose_name = "Характеристика"
     verbose_name_plural = "Характеристики"
-    # Позволяет выбрать характеристику из выпадающего списка
     autocomplete_fields = ['characteristic']
 
-# --- Все классы Inline остаются без изменений ---
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1
+    extra = 0
+    readonly_fields = ('display_image',) # Добавляем поле для предпросмотра
     verbose_name = "Дополнительное фото"
     verbose_name_plural = "Дополнительные фото"
+
+    # Функция для красивого отображения картинки
+    def display_image(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="100" height="100" style="object-fit:cover; border-radius: 8px;" />', obj.image.url)
+        return "Нет фото"
+    display_image.short_description = 'Превью'
+
 
 class ProductInfoCardInline(admin.TabularInline):
     model = ProductInfoCard
@@ -46,23 +69,37 @@ class ShopImageInline(admin.TabularInline):
     fields = ('image', 'caption', 'order')
 
 
+# 2. ИЗМЕНЕНИЕ: Создаем специальную форму для админки Product
+class ProductAdminForm(forms.ModelForm):
+    """Кастомная форма для модели Product."""
+    additional_images = forms.FileField(
+        label='Загрузить дополнительные фото (пачкой)',
+        # 3. ИЗМЕНЕНИЕ: Используем наш новый кастомный виджет
+        widget=MultipleFileInput(attrs={'multiple': True}),
+        required=False
+    )
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    # 3. ИЗМЕНЕНИЕ: Подключаем нашу кастомную форму
+    form = ProductAdminForm
+
     list_display = ('name', 'category', 'regular_price', 'is_active', 'display_deal_status')
     list_filter = ('category', 'is_active', 'info_panels', 'color_group')
-    search_fields = ('name', 'description')
-    inlines = [ProductImageInline, ProductInfoCardInline]
-    list_editable = ('is_active',)
     search_fields = ('name', 'description', 'characteristics__characteristic__name', 'characteristics__value')
+    list_editable = ('is_active',)
 
-    # 3. ДОБАВЛЯЕМ НОВЫЕ ИНЛАЙНЫ
     inlines = [
-        ProductImageInline,
-        ProductInfoCardInline,
         FeatureInline,
         ProductCharacteristicInline,
+        ProductInfoCardInline,
+        ProductImageInline, # Этот инлайн теперь будет показывать уже загруженные фото
     ]
-    list_editable = ('is_active',)
 
     fieldsets = (
         ('Основная информация', {
@@ -73,7 +110,8 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('deal_ends_at', 'deal_price')
         }),
         ('Медиафайлы', {
-            'fields': ('main_image', 'audio_sample')
+            # 4. ИЗМЕНЕНИЕ: Добавляем наше новое поле в секцию медиафайлов
+            'fields': ('main_image', 'additional_images', 'audio_sample')
         }),
         ('Связи и опции', {
             'fields': ('related_products', 'info_panels')
@@ -82,11 +120,32 @@ class ProductAdmin(admin.ModelAdmin):
 
     filter_horizontal = ('related_products', 'info_panels',)
 
+    # 5. ИЗМЕНЕНИЕ: Переопределяем метод сохранения модели
+    def save_model(self, request, obj, form, change):
+        """
+        Переопределенный метод для сохранения.
+        Сначала сохраняет основной объект (товар),
+        а затем обрабатывает загруженные дополнительные фотографии.
+        """
+        # Сначала вызываем стандартный метод сохранения, чтобы товар сохранился
+        # и получил свой ID (если это новый товар).
+        super().save_model(request, obj, form, change)
+
+        # Получаем список файлов из нашего кастомного поля 'additional_images'.
+        files = request.FILES.getlist('additional_images')
+        if files:
+            # Проходимся по каждому файлу и создаем для него объект ProductImage,
+            # связывая его с только что сохраненным товаром (obj).
+            for f in files:
+                ProductImage.objects.create(product=obj, image=f)
+
+            # Выводим сообщение об успехе в админ-панели.
+            self.message_user(request, f"Успешно загружено {len(files)} дополнительных фотографий.", messages.SUCCESS)
+
     @admin.display(description='Товар дня?', boolean=True)
     def display_deal_status(self, obj):
         return obj.is_deal_of_the_day
 
-    # --- 1. ДОБАВЛЯЕМ НОВЫЙ ЭКШЕН ---
     actions = ['make_active', 'make_inactive', 'duplicate_product']
 
     def make_active(self, request, queryset):
@@ -97,7 +156,6 @@ class ProductAdmin(admin.ModelAdmin):
         queryset.update(is_active=False)
     make_inactive.short_description = "Сделать выделенные товары неактивными"
 
-    # --- 2. ДОБАВЛЯЕМ ЛОГИКУ КОПИРОВАНИЯ ---
     @admin.action(description='Дублировать выбранные товары')
     def duplicate_product(self, request, queryset):
         if queryset.count() > 5:
@@ -109,28 +167,22 @@ class ProductAdmin(admin.ModelAdmin):
             return
 
         for product in queryset:
-            # --- Сохраняем связи ManyToMany ---
             related_products = list(product.related_products.all())
             info_panels = list(product.info_panels.all())
-
-            # --- Сохраняем связанные дочерние объекты (Inlines) ---
             images_to_copy = list(product.images.all())
             cards_to_copy = list(product.info_cards.all())
 
-            # --- Создаем копию ---
-            product.pk = None  # Это "магический" трюк, который говорит Django, что это новый объект
+            product.pk = None
             product.name = f"{product.name} (копия)"
-            product.is_active = False # Новую копию лучше сделать неактивной по умолчанию
-            product.save() # Сохраняем новый товар, чтобы получить его ID
+            product.is_active = False
+            product.save()
 
-            # --- Восстанавливаем связи ManyToMany ---
             product.related_products.set(related_products)
             product.info_panels.set(info_panels)
 
-            # --- Копируем связанные дочерние объекты ---
             for image in images_to_copy:
-                image.pk = None # Создаем новый объект
-                image.product = product # Привязываем к новому товару
+                image.pk = None
+                image.product = product
                 image.save()
 
             for card in cards_to_copy:
@@ -171,14 +223,12 @@ class CharacteristicAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('name',)
 
-# --- ЗАМЕНЯЕМ АДМИНКУ ДЛЯ ПРОМО-БАННЕРОВ ---
 @admin.register(PromoBanner)
 class PromoBannerAdmin(admin.ModelAdmin):
     list_display = ('title', 'order', 'is_active', 'display_image')
     list_editable = ('order', 'is_active')
     search_fields = ('title',)
 
-    # Добавляем новые поля в форму редактирования
     fieldsets = (
         (None, {
             'fields': ('title', 'is_active', 'order')
@@ -191,10 +241,8 @@ class PromoBannerAdmin(admin.ModelAdmin):
         }),
     )
 
-    # Функция для красивого отображения картинки в списке
     def display_image(self, obj):
         if obj.image:
-            # Делаем превью квадратным
             return format_html('<img src="{}" width="60" height="60" style="object-fit:cover; border-radius: 8px;" />', obj.image.url)
         return "Нет фото"
     display_image.short_description = 'Превью'
@@ -231,7 +279,6 @@ class ShopSettingsAdmin(admin.ModelAdmin):
         ('Основные настройки', {
             'fields': ('manager_username', 'contact_phone')
         }),
-        # --- НОВАЯ ГРУППИРОВКА ---
         ('Настройки страниц', {
             'classes': ('collapse',),
             'description': "Здесь настраиваются тексты и анимации для разных страниц.",
@@ -239,7 +286,7 @@ class ShopSettingsAdmin(admin.ModelAdmin):
                 'search_placeholder',
                 'search_initial_text',
                 'search_lottie_file',
-                'cart_lottie_file', # <-- Новое поле
+                'cart_lottie_file',
             )
         }),
         ('Настройки страницы "Информация" (FAQ)', {
@@ -270,7 +317,6 @@ class FaqItemAdmin(admin.ModelAdmin):
     search_fields = ('question', 'answer')
 
 class CartItemInline(admin.TabularInline):
-    """Инлайн для отображения товаров прямо на странице корзины."""
     model = CartItem
     extra = 0
     readonly_fields = ('product', 'quantity', 'added_at')
@@ -283,14 +329,12 @@ class CartAdmin(admin.ModelAdmin):
     list_display = ('telegram_id', 'created_at', 'updated_at')
     search_fields = ('telegram_id',)
     inlines = [CartItemInline]
-    # Запрещаем создание и изменение корзин вручную через админку
     readonly_fields = ('telegram_id', 'created_at', 'updated_at')
 
     def has_add_permission(self, request):
         return False
 
     def has_change_permission(self, request, obj=None):
-        # Разрешаем просмотр, но запрещаем редактирование
         return False if obj else True
 
 class OrderItemInline(admin.TabularInline):
@@ -319,7 +363,6 @@ class OrderAdmin(admin.ModelAdmin):
         ('Данные клиента', {'fields': ('get_full_name', 'phone')}),
         ('Финансы', {'fields': ('subtotal', 'discount_amount', 'final_total', 'applied_rule')}),
         ('Адрес доставки', {
-            # ИЗМЕНЕНИЕ: Поле 'region' удалено из списка
             'fields': (
                 'delivery_method',
                 'city',
@@ -347,7 +390,6 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.action(description='Экспортировать выбранные заказы в CSV')
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
-        # ИЗМЕНЕНИЕ: Поле 'region' удалено из списка
         field_names = [
             'id', 'status', 'last_name', 'first_name', 'patronymic', 'phone',
             'delivery_method', 'city', 'district', 'street', 'house',

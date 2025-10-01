@@ -3,13 +3,16 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import CategoryBar from '../components/CategoryBar';
 import PromoCarousel from '../components/PromoCarousel';
 import BottomSheet from '../components/BottomSheet';
-import { ReactComponent as SortIcon } from '../assets/sort-icon.svg';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import DealOfTheDay from '../components/DealOfTheDay';
 import PromoCarouselSkeleton from '../components/PromoCarouselSkeleton';
+import SearchBar from '../components/SearchBar';
+import FiltersSheet from '../components/FiltersSheet';
+import { ReactComponent as FilterIcon } from '../assets/sort-icon.svg'; // Переиспользуем иконку
+import { useSettings } from '../context/SettingsContext';
+import useDebounce from '../utils/useDebounce';
 
 import './HomePage.css';
 
@@ -25,13 +28,19 @@ const HomePage = () => {
     const [products, setProducts] = useState([]);
     const [dealProduct, setDealProduct] = useState(null);
     const [nextPage, setNextPage] = useState(null);
-    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const selectedCategory = searchParams.get('category');
-    const currentOrdering = searchParams.get('ordering') || '-created_at';
+    const settings = useSettings();
 
-    const observer = useRef();
+    const currentFilters = {
+        category: searchParams.get('category') || null,
+        ordering: searchParams.get('ordering') || '-created_at',
+        search: searchParams.get('search') || '',
+    };
 
     // useEffect №1: Загрузка "статичного" контента (баннеры, категории, товар дня)
     // Эта логика теперь полностью независима.
@@ -54,15 +63,21 @@ const HomePage = () => {
         });
     }, []); // Выполняется один раз
 
-    // useEffect №2: Загрузка товаров при смене фильтров (категория или сортировка)
+    // 4. ИЗМЕНЕНИЕ: Главный эффект для загрузки товаров. Теперь зависит и от поиска.
     useEffect(() => {
-        setLoadingProducts(true); // Включаем скелетоны для товаров
-        setProducts([]); // Обязательно сбрасываем товары
-        setNextPage(null); // Сбрасываем следующую страницу
+        // Синхронизируем значение в input'е с тем, что в URL
+        setSearchTerm(currentFilters.search);
+
+        setLoadingProducts(true);
+        setProducts([]);
+        setNextPage(null);
 
         const params = new URLSearchParams();
-        if (selectedCategory) params.append('category', selectedCategory);
-        if (currentOrdering) params.append('ordering', currentOrdering);
+        if (currentFilters.category) params.append('category', currentFilters.category);
+        if (currentFilters.ordering) params.append('ordering', currentFilters.ordering);
+        // Берем поисковый запрос из currentFilters, а не из debouncedSearchTerm
+        if (currentFilters.search) params.append('search', currentFilters.search);
+
         const initialUrl = `/products/?${params.toString()}`;
 
         apiClient.get(initialUrl)
@@ -71,8 +86,29 @@ const HomePage = () => {
                 setNextPage(response.data.next);
             })
             .catch(error => console.error("Ошибка при начальной загрузке товаров:", error))
-            .finally(() => setLoadingProducts(false)); // Выключаем скелетоны для товаров
-    }, [selectedCategory, currentOrdering]);
+            .finally(() => setLoadingProducts(false));
+
+        // Массив зависимостей теперь полностью основан на "источнике правды" - URL
+    }, [currentFilters.category, currentFilters.ordering, currentFilters.search]);
+
+    useEffect(() => {
+        // Используем функциональную форму, чтобы не зависеть от searchParams извне.
+        // React передаст нам самую свежую версию как 'prevParams'.
+        setSearchParams(prevParams => {
+            const newParams = new URLSearchParams(prevParams);
+            // Используем debouncedSearchTerm, а не searchTerm
+            if (debouncedSearchTerm) {
+                newParams.set('search', debouncedSearchTerm);
+            } else {
+                newParams.delete('search');
+            }
+            return newParams;
+        }, { replace: true });
+
+// Теперь хук корректно зависит только от debouncedSearchTerm и setSearchParams
+    }, [debouncedSearchTerm, setSearchParams]);
+
+    const observer = useRef();
 
     // Функция для подгрузки следующих страниц (бесконечный скролл)
     const loadMoreProducts = useCallback(() => {
@@ -90,42 +126,40 @@ const HomePage = () => {
 
     // Intersection Observer для вызова loadMoreProducts
     const lastProductElementRef = useCallback(node => {
-        // ИЗМЕНЕНИЕ: Не блокируем наблюдатель во время основной загрузки,
-        // но функция loadMoreProducts сама себя заблокирует, если нужно.
-        if (observer.current) observer.current.disconnect();
+        // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Если идёт основная загрузка, не создаем наблюдатель.
+        // Это предотвратит ложное срабатывание сразу после фильтрации.
+        if (loadingProducts) return;
 
+        if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && nextPage) {
                 loadMoreProducts();
             }
         });
         if (node) observer.current.observe(node);
-    }, [nextPage, loadMoreProducts]);
+    }, [loadingProducts, nextPage, loadMoreProducts]);
 
 
-    // Обработчики (без изменений)
-    const handleSelectCategory = (categoryId) => {
-        setSearchParams(prev => {
-            if (categoryId) prev.set('category', categoryId);
-            else prev.delete('category');
-            prev.delete('ordering');
-            return prev;
-        }, { replace: true });
+
+    const handleApplyFilters = (newFilters) => {
+        const params = new URLSearchParams(searchParams);
+
+        if (newFilters.category) {
+            params.set('category', newFilters.category);
+        } else {
+            params.delete('category');
+        }
+
+        if (newFilters.ordering) {
+            params.set('ordering', newFilters.ordering);
+        } else {
+            params.delete('ordering');
+        }
+
+        setSearchParams(params, { replace: true });
+        // ИСПРАВЛЕНИЕ: Закрываем правильное окно
+        setIsFiltersOpen(false);
     };
-
-    const handleSortChange = (newOrdering) => {
-        setSearchParams(prev => {
-            prev.set('ordering', newOrdering || '-created_at');
-            return prev;
-        }, { replace: true });
-        setIsSortMenuOpen(false);
-    };
-
-    const sortOptions = [
-        { key: '-created_at', label: 'По умолчанию (новые)' },
-        { key: 'price', label: 'Сначала дешевле' },
-        { key: '-price', label: 'Сначала дороже' },
-    ];
 
     return (
         <div className="home-page sticky-top-safe">
@@ -136,15 +170,15 @@ const HomePage = () => {
             {/* Товар дня зависит только от своего наличия */}
             {dealProduct && <DealOfTheDay product={dealProduct}/>}
 
-            <div className="filters-bar">
-                <button className="sort-button" onClick={() => setIsSortMenuOpen(true)}>
-                    <SortIcon/>
-                </button>
-                <CategoryBar
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={handleSelectCategory}
+            <div className="top-bar">
+                <SearchBar
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder={settings.search_placeholder || "Найти товары..."}
                 />
+                <button className="filter-button" onClick={() => setIsFiltersOpen(true)}>
+                    <FilterIcon/>
+                </button>
             </div>
 
             <div className="products-grid">
@@ -155,14 +189,16 @@ const HomePage = () => {
                         </Link>
                     </div>
                 ))}
-
-                {/* Скелетоны товаров зависят ТОЛЬКО от loadingProducts */}
                 {loadingProducts && (
-                    [...Array(4)].map((_, i) => (
-                        <ProductCardSkeleton key={`skeleton-${i}`}/>
-                    ))
+                    [...Array(6)].map((_, i) => <ProductCardSkeleton key={`skeleton-${i}`}/>)
                 )}
             </div>
+
+            {!loadingProducts && products.length === 0 && (
+                <div className="no-products-message">
+                    Товары не найдены
+                </div>
+            )}
 
             {/* Сообщение "нет товаров" также зависит от loadingProducts */}
             {!loadingProducts && products.length === 0 && (
@@ -171,20 +207,13 @@ const HomePage = () => {
                 </div>
             )}
 
-            <BottomSheet isOpen={isSortMenuOpen} onClose={() => setIsSortMenuOpen(false)}>
-                <div className="sort-menu">
-                    <h3>Сортировка</h3>
-                    {sortOptions.map(option => (
-                        <div
-                            key={option.key}
-                            className={`sort-option ${currentOrdering === option.key ? 'active' : ''}`}
-                            onClick={() => handleSortChange(option.key)}
-                        >
-                            {option.label}
-                            {currentOrdering === option.key && '✔'}
-                        </div>
-                    ))}
-                </div>
+            <BottomSheet isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)}>
+                <FiltersSheet
+                    allCategories={categories}
+                    currentFilters={currentFilters}
+                    onApply={handleApplyFilters}
+                    onClose={() => setIsFiltersOpen(false)}
+                />
             </BottomSheet>
         </div>
     );

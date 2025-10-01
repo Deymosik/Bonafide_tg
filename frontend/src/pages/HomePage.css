@@ -10,7 +10,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     /* Добавляем отступы здесь, чтобы они не влияли на панель категорий */
-    padding: 0 12px 12px 12px;
+    padding: 12px;
 }
 
 .no-products-message {
@@ -149,4 +149,35 @@
 .sort-option.active {
     color: var(--app-button-color);
     font-weight: 600;
+}
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px; /* Равномерные отступы */
+    position: sticky;
+    top: var(--safe-area-inset-top); /* Учитываем "челку" */
+    background-color: var(--app-bg-color);
+    z-index: 100;
+    border-bottom: 1px solid var(--app-separator-color);
+}
+
+.filter-button {
+    background: var(--app-secondary-bg-color);
+    border: none;
+    border-radius: 12px;
+    height: 44px; /* Такая же высота, как у поля поиска */
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.filter-button svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--app-text-color);
 }
