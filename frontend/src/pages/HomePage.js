@@ -200,13 +200,6 @@ const HomePage = () => {
                 </div>
             )}
 
-            {/* Сообщение "нет товаров" также зависит от loadingProducts */}
-            {!loadingProducts && products.length === 0 && (
-                <div className="no-products-message">
-                    В этой категории пока нет товаров
-                </div>
-            )}
-
             <BottomSheet isOpen={isFiltersOpen} onClose={() => setIsFiltersOpen(false)}>
                 <FiltersSheet
                     allCategories={categories}

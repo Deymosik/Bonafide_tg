@@ -1,0 +1,179 @@
+/* frontend/src/pages/ArticlePage.css */
+.article-page {
+    padding: 16px;
+    background-color: var(--app-bg-color);
+    color: var(--app-text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.article-content img {
+    /* 1. ИЗМЕНЕНИЕ: Заставляем изображение занимать 100% ширины контейнера */
+    max-width: 100%;
+
+    /* 2. ИЗМЕНЕНИЕ: Высота подстроится автоматически, сохраняя пропорции */
+    height: auto;
+
+    /* 3. ИЗМЕНЕНИЕ: Добавляем скругление и вертикальные отступы для красоты */
+    border-radius: 12px;
+    margin: 1.5em 0;
+}
+
+/* Стили для темной темы */
+.article-page.theme-dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+.article-page.theme-dark .article-meta {
+    color: #888;
+}
+.article-page.theme-dark a {
+    color: #bb86fc;
+}
+
+.article-header {
+    margin-bottom: 24px;
+}
+
+.article-cover-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.article-title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 12px 0;
+}
+
+.article-meta {
+    display: flex;
+    justify-content: space-between; /* <-- 1. ИЗМЕНЕНИЕ: Расталкивает дочерние элементы по краям */
+    align-items: center; /* <-- 1. ИЗМЕНЕНИЕ: Выравнивает всё по центру по вертикали */
+    gap: 16px;
+    font-size: 14px;
+    color: var(--app-hint-color);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--app-separator-color);
+}
+
+.meta-info-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap; /* Позволяет переноситься на новую строку на маленьких экранах */
+}
+
+.article-content {
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+/* Стили для контента из CKEditor */
+.article-content h1, .article-content h2, .article-content h3 {
+    font-weight: 600;
+    margin: 1.8em 0 1em 0;
+    line-height: 1.4;
+}
+.article-content p {
+    margin: 0 0 1.2em 0;
+}
+.article-content ul, .article-content ol {
+    margin: 0 0 1.2em 0;
+    padding-left: 24px;
+}
+.article-content a {
+    color: var(--app-link-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+.article-content blockquote {
+    margin: 1.5em 0;
+    padding-left: 1.5em;
+    border-left: 3px solid var(--app-button-color);
+    color: var(--app-hint-color);
+    font-style: italic;
+}
+
+.article-page-loader, .article-page-error {
+    padding: 50px 20px;
+    text-align: center;
+    font-size: 18px;
+    color: var(--app-hint-color);
+}
+
+/* 1. ИЗМЕНЕНИЕ: Стили для кнопки смены темы */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px; /* Небольшой отступ для удобства нажатия */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    /* Убрали position: fixed и все связанные стили */
+}
+.theme-toggle-btn:hover {
+    background-color: var(--app-separator-color);
+}
+.theme-toggle-btn:active {
+    transform: scale(0.95);
+}
+.theme-toggle-btn svg {
+    width: 22px; /* Уменьшаем размер иконки */
+    height: 22px;
+    fill: var(--app-hint-color); /* Цвет теперь как у остального мета-текста */
+    transition: fill 0.2s ease;
+}
+.theme-toggle-btn:hover svg {
+    fill: var(--app-text-color);
+}
+/* 2. ИЗМЕНЕНИЕ: Стили для блока связанных товаров */
+.related-products-section {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--app-separator-color);
+}
+.theme-dark .related-products-section {
+    border-top-color: #333;
+}
+
+.section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+}
+
+.related-products-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 4px 0 12px 0;
+    /* Убираем скроллбар */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.related-products-container::-webkit-scrollbar {
+    display: none;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Расстояние между иконкой и текстом */
+}
+
+.meta-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+    fill: currentColor; /* Иконка будет того же цвета, что и текст */
+}

@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { useSettings } from '../context/SettingsContext';
 import apiClient from '../api';
-import ProductGallery from '../components/ProductGallery'; // 1. Импортируем НОВЫЙ компонент галереи
+import ProductGallery from '../components/ProductGallery';
 import { useTelegram } from '../utils/telegram';
 import RelatedProductCard from '../components/RelatedProductCard';
 import { useCart } from '../context/CartContext';
@@ -12,6 +14,7 @@ import AccordionItem from '../components/AccordionItem';
 import './ProductPage.css';
 
 const ProductPage = () => {
+    const settings = useSettings();
     const { id: initialId } = useParams();
     const navigate = useNavigate();
     const tg = useTelegram();
@@ -59,6 +62,8 @@ const ProductPage = () => {
             tg.BackButton.hide();
         };
     }, [initialId, fetchProductData, navigate, tg]);
+
+    const isDataReady = !loading && !!product && !!settings.site_name;
 
     // Эти обработчики остаются без изменений
     const handleAddToCart = () => {
@@ -108,14 +113,37 @@ const ProductPage = () => {
         }
     };
 
-    // Эти условия остаются без изменений
+    // 1. СНАЧАЛА выполняем все проверки и "ранние выходы"
     if (loading) {
         return <ProductPageSkeleton />;
     }
 
     if (!product) {
-        return <div className="loader">Товар не найден</div>;
+        return (
+            <>
+                <Helmet>
+                    <title>Товар не найден</title>
+                </Helmet>
+                <main className="page-content">
+                    <div className="loader">Товар не найден</div>
+                </main>
+            </>
+        );
     }
+
+    // 2. ТОЛЬКО ТЕПЕРЬ, когда мы уверены, что `product` существует, мы можем безопасно вычислять мета-теги
+    const title = (settings.seo_title_product || 'Купить {{product_name}} | {{site_name}}')
+        .replace('{{product_name}}', product.name)
+        .replace('{{product_price}}', parseFloat(product.price).toFixed(0))
+        .replace('{{site_name}}', settings.site_name || '');
+
+    const description = (settings.seo_description_product || 'Закажите {{product_name}} с доставкой.')
+        .replace('{{product_name}}', product.name)
+        .replace('{{product_price}}', parseFloat(product.price).toFixed(0))
+        .replace('{{site_name}}', settings.site_name || '');
+
+    // --- КОНЕЦ БЛОКА ИСПРАВЛЕНИЙ ---
+
 
     const price = parseFloat(product.price);
     const regularPrice = parseFloat(product.regular_price);
@@ -124,158 +152,166 @@ const ProductPage = () => {
 
     // --- НАЧАЛО JSX РЕНДЕРИНГА (ЗДЕСЬ БУДУТ ВСЕ ВАШИ БЛОКИ) ---
     return (
-        <div className={`product-page ${isSwitchingColor ? 'switching-color' : ''}`}>
-            {/* 4. ЗАМЕНЯЕМ СТАРЫЙ ImageSlider НА НОВЫЙ ProductGallery */}
-            <ProductGallery images={allImagesForGallery} />
+        <>
+            {isDataReady && (
+                <Helmet>
+                    <title>{title}</title>
+                    <meta name="description" content={description} />
+                </Helmet>
+            )}
+            <div className={`product-page ${isSwitchingColor ? 'switching-color' : ''}`}>
+                {/* 4. ЗАМЕНЯЕМ СТАРЫЙ ImageSlider НА НОВЫЙ ProductGallery */}
+                <ProductGallery images={allImagesForGallery} />
 
-            <div className="product-details">
-                {/* НАЧАЛО: Новый объединенный блок для основной информации */}
-                <div className="product-header-card">
-                    {/* Инфо-панели теперь наверху */}
-                    {(product.info_panels || []).length > 0 && (
-                        <div className="info-panels-product">
-                            {product.info_panels.map(panel => (
-                                <span key={panel.name} className="info-panel"
-                                      style={{backgroundColor: panel.color, color: panel.text_color}}>
-                        {panel.name}
-                    </span>
-                            ))}
+                <div className="product-details">
+                    {/* НАЧАЛО: Новый объединенный блок для основной информации */}
+                    <div className="product-header-card">
+                        {/* Инфо-панели теперь наверху */}
+                        {(product.info_panels || []).length > 0 && (
+                            <div className="info-panels-product">
+                                {product.info_panels.map(panel => (
+                                    <span key={panel.name} className="info-panel"
+                                          style={{backgroundColor: panel.color, color: panel.text_color}}>
+                            {panel.name}
+                        </span>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Название товара */}
+                        <h1 className="product-title">{product.name}</h1>
+
+                        {/* Секция с вариантами цветов (если они есть) */}
+                        {allColorVariations.length > 1 && (
+                            <div className="color-swatches-section">
+                                <span className="color-swatches-label">Цвет:</span>
+                                <div className="color-swatches-container">
+                                    {allColorVariations.map(variation => (
+                                        <Link
+                                            to={`/product/${variation.id}`}
+                                            key={variation.id}
+                                            className={`color-swatch ${variation.id === product.id ? 'active' : ''}`}
+                                            onClick={(e) => handleColorSwitch(e, variation.id)}
+                                        >
+                                            <img src={variation.main_image_thumbnail_url} alt="Color variation"/>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Блок с ценой */}
+                        <div className="price-section-main">
+                            {hasDiscount ? (
+                                <>
+                                    <span className="price-main-current">{price.toFixed(0)} ₽</span>
+                                    <span className="price-main-old">{regularPrice.toFixed(0)} ₽</span>
+                                    <span className="discount-badge-page">-{discountPercent}%</span>
+                                </>
+                            ) : (
+                                <span className="price-main-regular">{regularPrice.toFixed(0)} ₽</span>
+                            )}
+                        </div>
+                    </div>
+
+                    {product.audio_sample && (
+                        <div className="product-section audio-section">
+                            <h2>Пример звучания</h2>
+                            <audio controls className="audio-player">
+                                <source src={product.audio_sample} type="audio/mpeg"/>
+                                Ваш браузер не поддерживает воспроизведение аудио.
+                            </audio>
                         </div>
                     )}
 
-                    {/* Название товара */}
-                    <h1 className="product-title">{product.name}</h1>
-
-                    {/* Секция с вариантами цветов (если они есть) */}
-                    {allColorVariations.length > 1 && (
-                        <div className="color-swatches-section">
-                            <span className="color-swatches-label">Цвет:</span>
-                            <div className="color-swatches-container">
-                                {allColorVariations.map(variation => (
-                                    <Link
-                                        to={`/product/${variation.id}`}
-                                        key={variation.id}
-                                        className={`color-swatch ${variation.id === product.id ? 'active' : ''}`}
-                                        onClick={(e) => handleColorSwitch(e, variation.id)}
-                                    >
-                                        <img src={variation.main_image_thumbnail_url} alt="Color variation"/>
-                                    </Link>
+                    {itemInCart && product.related_products && product.related_products.length > 0 && (
+                        <div className="product-section related-section">
+                            <h2>С этим товаром покупают</h2>
+                            <div className="related-products-container">
+                                {product.related_products.map(related_product => (
+                                    // 6. Убеждаемся, что RelatedProductCard тоже получает правильные данные
+                                    <RelatedProductCard
+                                        key={related_product.id}
+                                        product={related_product}
+                                    />
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Блок с ценой */}
-                    <div className="price-section-main">
-                        {hasDiscount ? (
-                            <>
-                                <span className="price-main-current">{price.toFixed(0)} ₽</span>
-                                <span className="price-main-old">{regularPrice.toFixed(0)} ₽</span>
-                                <span className="discount-badge-page">-{discountPercent}%</span>
-                            </>
-                        ) : (
-                            <span className="price-main-regular">{regularPrice.toFixed(0)} ₽</span>
+                    <div className="product-section">
+                        <h2>Описание</h2>
+                        <div
+                            className="product-description-content"
+                            dangerouslySetInnerHTML={{__html: product.description}}
+                        />
+                    </div>
+
+                    {product.info_cards && product.info_cards.length > 0 && (
+                        <div className="product-section">
+                            <div className="info-cards-container">
+                                {product.info_cards.map((card, index) => (
+                                    <a key={index} href={card.link_url} target="_blank" rel="noopener noreferrer"
+                                       className="info-card-rectangle">
+                                        {/* 7. Используем превью для инфо-карточек */}
+                                        <img src={card.image_url} alt={card.title} className="info-card-image-rect"/>
+                                        <div className="info-card-text-content">
+                                            <h4 className="info-card-title-rect">{card.title}</h4>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="product-section">
+                        {product.features && product.features.length > 0 && (
+                            <AccordionItem title="Функционал">
+                                <ul className="spec-list simple">
+                                    {product.features.map((feature, index) => (
+                                        <li key={index}>{feature.name}</li>
+                                    ))}
+                                </ul>
+                            </AccordionItem>
+                        )}
+
+                        {product.grouped_characteristics && product.grouped_characteristics.length > 0 && (
+                            product.grouped_characteristics.map((category, index) => (
+                                <AccordionItem title={category.name} key={index}>
+                                    <ul className="spec-list">
+                                        {category.characteristics.map((char, charIndex) => (
+                                            <li key={charIndex}>
+                                                <span className="spec-name">{char.name}</span>
+                                                <span className="spec-value">{char.value}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionItem>
+                            ))
                         )}
                     </div>
                 </div>
 
-                {product.audio_sample && (
-                    <div className="product-section audio-section">
-                        <h2>Пример звучания</h2>
-                        <audio controls className="audio-player">
-                            <source src={product.audio_sample} type="audio/mpeg"/>
-                            Ваш браузер не поддерживает воспроизведение аудио.
-                        </audio>
-                    </div>
-                )}
-
-                {itemInCart && product.related_products && product.related_products.length > 0 && (
-                    <div className="product-section related-section">
-                        <h2>С этим товаром покупают</h2>
-                        <div className="related-products-container">
-                            {product.related_products.map(related_product => (
-                                // 6. Убеждаемся, что RelatedProductCard тоже получает правильные данные
-                                <RelatedProductCard
-                                    key={related_product.id}
-                                    product={related_product}
-                                />
-                            ))}
+                <div className="sticky-footer">
+                    {itemInCart ? (
+                        <div className="cart-controls-container">
+                            <Link to="/cart" className="go-to-cart-btn">В корзине</Link>
+                            <div className="quantity-stepper">
+                                <button className="quantity-btn"
+                                        onClick={() => handleQuantityChange(itemInCart.quantity - 1)}>−
+                                </button>
+                                <span className="quantity-display">{itemInCart.quantity}</span>
+                                <button className="quantity-btn"
+                                        onClick={() => handleQuantityChange(itemInCart.quantity + 1)}>+
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
-
-                <div className="product-section">
-                    <h2>Описание</h2>
-                    <div
-                        className="product-description-content"
-                        dangerouslySetInnerHTML={{__html: product.description}}
-                    />
-                </div>
-
-                {product.info_cards && product.info_cards.length > 0 && (
-                    <div className="product-section">
-                        <div className="info-cards-container">
-                            {product.info_cards.map((card, index) => (
-                                <a key={index} href={card.link_url} target="_blank" rel="noopener noreferrer"
-                                   className="info-card-rectangle">
-                                    {/* 7. Используем превью для инфо-карточек */}
-                                    <img src={card.image_url} alt={card.title} className="info-card-image-rect"/>
-                                    <div className="info-card-text-content">
-                                        <h4 className="info-card-title-rect">{card.title}</h4>
-                                    </div>
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                <div className="product-section">
-                    {product.features && product.features.length > 0 && (
-                        <AccordionItem title="Функционал">
-                            <ul className="spec-list simple">
-                                {product.features.map((feature, index) => (
-                                    <li key={index}>{feature.name}</li>
-                                ))}
-                            </ul>
-                        </AccordionItem>
-                    )}
-
-                    {product.grouped_characteristics && product.grouped_characteristics.length > 0 && (
-                        product.grouped_characteristics.map((category, index) => (
-                            <AccordionItem title={category.name} key={index}>
-                                <ul className="spec-list">
-                                    {category.characteristics.map((char, charIndex) => (
-                                        <li key={charIndex}>
-                                            <span className="spec-name">{char.name}</span>
-                                            <span className="spec-value">{char.value}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </AccordionItem>
-                        ))
+                    ) : (
+                        <button className="add-to-cart-btn" onClick={handleAddToCart}>Добавить в корзину</button>
                     )}
                 </div>
             </div>
-
-            <div className="sticky-footer">
-                {itemInCart ? (
-                    <div className="cart-controls-container">
-                        <Link to="/cart" className="go-to-cart-btn">В корзине</Link>
-                        <div className="quantity-stepper">
-                            <button className="quantity-btn"
-                                    onClick={() => handleQuantityChange(itemInCart.quantity - 1)}>−
-                            </button>
-                            <span className="quantity-display">{itemInCart.quantity}</span>
-                            <button className="quantity-btn"
-                                    onClick={() => handleQuantityChange(itemInCart.quantity + 1)}>+
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <button className="add-to-cart-btn" onClick={handleAddToCart}>Добавить в корзину</button>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 

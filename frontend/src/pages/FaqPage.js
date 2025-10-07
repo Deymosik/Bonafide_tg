@@ -1,5 +1,4 @@
 // frontend/src/pages/FaqPage.js
-
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api';
 import AccordionItem from '../components/AccordionItem';
@@ -11,8 +10,6 @@ const FaqPage = () => {
     const [faqItems, setFaqItems] = useState([]);
     const [loadingFaq, setLoadingFaq] = useState(true);
     const settings = useSettings();
-
-    // 1. По умолчанию открываем вкладку "О нас"
     const [activeTab, setActiveTab] = useState('about');
 
     useEffect(() => {

@@ -414,15 +414,9 @@
     background-color: var(--app-secondary-bg-color);
     padding: 16px;
     margin-bottom: 24px;
+    margin-top: 16px;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.08); /* Тень теперь направлена вверх */
-
-    /* КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ: */
-
-    /* а) Отрицательный отступ, который "поднимает" блок наверх, создавая наложение */
-    margin-top: -24px;
-
-    /* б) Скругляем только верхние углы, чтобы это выглядело как единое целое с галереей */
-    border-radius: 24px;
+    border-radius: 16px;
 }
 
 /* 2. Стилизуем заголовок внутри новой карточки */
@@ -459,27 +453,4 @@
     padding-top: 20px;
     /* Добавляем линию-разделитель для визуального отделения */
     border-top: 1px solid var(--app-separator-color);
-}
-
-/* 1. Стилизуем сам контейнер пагинации */
-.swiper-pagination-fraction {
-    /* Располагаем в правом нижнем углу */
-    bottom: 30px !important; /* !important нужен для переопределения стилей Swiper */
-    right: 16px !important;
-
-    /* Сбрасываем позиционирование по левому краю и ширину */
-    left: auto !important;
-    width: auto !important; /* Контейнер будет занимать ширину контента */
-
-    /* Превращаем в "капсулу" */
-    background-color: rgba(0, 0, 0, 0.45); /* Полупрозрачный фон */
-    color: #ffffff; /* Белый текст */
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.5px; /* Немного разрядим цифры */
-
-    /* Добавляем легкую тень для читаемости на светлых фото */
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }

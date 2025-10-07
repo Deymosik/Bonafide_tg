@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Prefetch
+from django.db.models import F
 
 from decimal import Decimal
 
@@ -13,12 +14,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (
     Product, Category, PromoBanner, DiscountRule,
-    ShopSettings, FaqItem, Cart, CartItem, Order
+    ShopSettings, FaqItem, Cart, CartItem, Order, Article, ArticleCategory
 )
 from .serializers import (
     ProductListSerializer, ProductDetailSerializer, CategorySerializer,
     PromoBannerSerializer, ShopSettingsSerializer, FaqItemSerializer,
-    DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer, OrderCreateSerializer
+    DealOfTheDaySerializer, CartSerializer, DetailedCartItemSerializer, OrderCreateSerializer,
+    ArticleListSerializer, ArticleDetailSerializer, ArticleCategorySerializer
 )
 from .utils import validate_init_data
 
@@ -511,3 +513,82 @@ class OrderCreateView(TelegramAuthMixin):
             return Response({'success': True, 'order_id': order.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ArticleListView(generics.ListAPIView):
+    """
+    Возвращает комплексные данные для страницы блога:
+    - Список всех категорий для фильтрации.
+    - Список статей с пагинацией, фильтрацией по категории и сортировкой.
+    """
+    serializer_class = ArticleListSerializer
+    pagination_class = StandardResultsSetPagination
+
+    # 1. ИЗМЕНЕНИЕ: Добавляем OrderingFilter и разрешаем сортировку по просмотрам
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    search_fields = ['title', 'content']
+    ordering_fields = ['published_at', 'views_count']
+    ordering = ['-published_at'] # Сортировка по умолчанию
+
+    def get_queryset(self):
+        """Формирует основной queryset статей на основе параметров запроса."""
+        queryset = Article.objects.filter(
+            status=Article.Status.PUBLISHED,
+            published_at__lte=timezone.now() # Учитываем отложенную публикацию
+        ).select_related('category')
+
+        # Фильтрация по категории
+        category_slug = self.request.query_params.get('category')
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """
+        Переопределяем стандартный метод .list() для добавления
+        дополнительных данных в API-ответ.
+        """
+        # 1. Получаем основной отфильтрованный и отсортированный список статей с пагинацией
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            articles_serializer = self.get_serializer(page, many=True)
+            paginated_response = self.get_paginated_response(articles_serializer.data)
+        else:
+            articles_serializer = self.get_serializer(queryset, many=True)
+            paginated_response = Response(articles_serializer.data)
+
+        # 2. Получаем список всех категорий
+        categories = ArticleCategory.objects.all()
+        categories_serializer = ArticleCategorySerializer(categories, many=True)
+
+        # 3. Собираем финальный ответ
+        data = {
+            'categories': categories_serializer.data,
+            'articles': paginated_response.data # Здесь уже есть 'results', 'next', 'count' и т.д.
+        }
+
+        return Response(data)
+
+
+class ArticleDetailView(generics.RetrieveAPIView):
+    """Возвращает одну статью по её slug."""
+    queryset = Article.objects.filter(status=Article.Status.PUBLISHED)
+    serializer_class = ArticleDetailSerializer
+    lookup_field = 'slug' # Указываем, что искать нужно по полю 'slug', а не по 'id'
+
+class ArticleIncrementViewCountView(APIView):
+    """
+    Увеличивает счётчик просмотров для статьи на 1.
+    Безопасен с точки зрения race conditions.
+    """
+    def post(self, request, slug, *args, **kwargs):
+        try:
+            article = Article.objects.get(slug=slug, status=Article.Status.PUBLISHED)
+            # Используем F() для атомарного увеличения значения в базе данных
+            article.views_count = F('views_count') + 1
+            article.save(update_fields=['views_count'])
+            return Response(status=status.HTTP_200_OK)
+        except Article.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

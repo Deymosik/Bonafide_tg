@@ -1,12 +1,14 @@
 // frontend/src/App.js
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import MainLayout from './components/MainLayout';
 import Notification from './components/Notification';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
-import SearchPage from './pages/SearchPage';
+import ArticleListPage from './pages/ArticleListPage';
+import ArticlePage from './pages/ArticlePage';
 import LegalPage from './pages/LegalPage';
 import FaqPage from './pages/FaqPage';
 import { useTelegram } from './utils/telegram';
@@ -37,38 +39,46 @@ function App() {
     };
 
     return (
-        <Router future={futureFlags}>
-            <Notification
-                message={notification.message}
-                type={notification.type}
-                isVisible={notification.isVisible}
-            />
-            <Routes>
-                {/* Все страницы, у которых должен быть TabBar, теперь "вложены" в MainLayout */}
-                <Route path="/" element={<MainLayout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="search" element={<SearchPage />} />
-                    <Route path="cart" element={<CartPage />} />
-                    <Route path="faq" element={<FaqPage />} />
-                </Route>
+        <HelmetProvider>
+                <Router future={futureFlags}>
+                    <Notification
+                        message={notification.message}
+                        type={notification.type}
+                        isVisible={notification.isVisible}
+                    />
+                    <Routes>
+                        {/* Все страницы, у которых должен быть TabBar, теперь "вложены" в MainLayout */}
+                        <Route path="/" element={<MainLayout />}>
+                            <Route index element={<HomePage />} />
+                            <Route path="articles" element={<ArticleListPage />} />
+                            <Route path="cart" element={<CartPage />} />
+                            <Route path="faq" element={<FaqPage />} />
+                        </Route>
 
-                <Route path="product/:id" element={
-                    <main className="page-content">
-                        <ProductPage />
-                    </main>
-                } />
-                <Route path="/offer" element={<main className="page-content"><LegalPage /></main>} />
-                <Route path="/privacy" element={<main className="page-content"><LegalPage /></main>} />
+                        <Route path="/articles/:slug" element={
+                            <main className="page-content">
+                                <ArticlePage />
+                            </main>
+                        } />
 
-                <Route path="/checkout" element={
-                    <main className="page-content">
-                        <CheckoutPage />
-                    </main>
-                } />
+                        <Route path="product/:id" element={
+                            <main className="page-content">
+                                <ProductPage />
+                            </main>
+                        } />
+                        <Route path="/offer" element={<main className="page-content"><LegalPage /></main>} />
+                        <Route path="/privacy" element={<main className="page-content"><LegalPage /></main>} />
+
+                        <Route path="/checkout" element={
+                            <main className="page-content">
+                                <CheckoutPage />
+                            </main>
+                        } />
 
 
-            </Routes>
-        </Router>
+                    </Routes>
+                </Router>
+        </HelmetProvider>
     );
 }
 

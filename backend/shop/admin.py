@@ -8,7 +8,8 @@ from django import forms
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner, ProductInfoCard,
     DiscountRule, ColorGroup, ShopSettings, FaqItem, ShopImage,
-    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem, Order, OrderItem
+    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart,
+    CartItem, Order, OrderItem, ArticleCategory, Article
 )
 
 class MultipleFileInput(forms.FileInput):
@@ -289,6 +290,23 @@ class ShopSettingsAdmin(admin.ModelAdmin):
                 'cart_lottie_file',
             )
         }),
+        ('Настройки Блога/Статей', {
+            'classes': ('collapse',),
+            'fields': ('article_font_family',)
+        }),
+        ('SEO Настройки', {
+            'classes': ('collapse',),
+            'description': "Управление мета-тегами для страниц. Вы можете использовать переменные, например <b>{{site_name}}</b>. Для страницы товара также доступны <b>{{product_name}}</b> и <b>{{product_price}}</b>.",
+            'fields': (
+                'site_name',
+                'seo_title_home', 'seo_description_home',
+                'seo_title_blog', 'seo_description_blog',
+                'seo_title_product', 'seo_description_product',
+                'seo_title_cart', 'seo_description_cart',
+                'seo_title_faq', 'seo_description_faq',
+                'seo_title_checkout', 'seo_description_checkout',
+            )
+        }),
         ('Настройки страницы "Информация" (FAQ)', {
             'classes': ('collapse',),
             'fields': ('about_us_section', 'delivery_section', 'warranty_section')
@@ -402,3 +420,56 @@ class OrderAdmin(admin.ModelAdmin):
         for obj in queryset:
             writer.writerow([getattr(obj, field) for field in field_names])
         return response
+
+
+@admin.register(ArticleCategory)
+class ArticleCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug')
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)} # Автозаполнение slug из name
+
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    # 1. ИЗМЕНЕНИЕ: Добавляем 'is_featured' и 'views_count' в список для удобства
+    list_display = ('title', 'category', 'status', 'is_featured', 'views_count', 'published_at')
+    list_filter = ('status', 'category', 'is_featured', 'author', 'published_at')
+    search_fields = ('title', 'content', 'meta_title', 'meta_description')
+    # 2. ИЗМЕНЕНИЕ: Позволяем быстро менять статус и закреплять статью
+    list_editable = ('status', 'is_featured')
+    prepopulated_fields = {'slug': ('title',)}
+    autocomplete_fields = ['author']
+    filter_horizontal = ('related_products',)
+
+    # 1. ИЗМЕНЕНИЕ: Добавляем описания (description) к fieldsets
+    fieldsets = (
+        ('Основное', {
+            'fields': ('title', 'slug', 'status', 'is_featured', 'published_at', 'category', 'author')
+        }),
+        ('Контент', {
+            'description': "<h3>Шаг 1: Выберите тип контента.</h3><p>Затем заполните <b>только одно</b> из двух полей ниже: либо напишите текст в редакторе, либо вставьте внешнюю ссылку.</p>",
+            'fields': ('content_type', 'cover_image', 'content', 'external_url')
+        }),
+        ('Связанные товары (Опционально)', {
+            'classes': ('collapse',),
+            'description': "<h3>Шаг 2: Увеличьте продажи!</h3><p>Выберите товары, которые тематически подходят к статье. Они будут показаны читателю.</p>",
+            'fields': ('related_products',)
+        }),
+        ('Настройки SEO (Очень важно!)', {
+            'classes': ('collapse',),
+            'description': "<h3>Шаг 3: Привлеките читателей из Google и Яндекс.</h3><p>Эти поля напрямую влияют на то, как ваша статья будет выглядеть в поисковой выдаче.</p>",
+            'fields': ('meta_title', 'meta_description')
+        }),
+    )
+
+    # 3. ИЗМЕНЕНИЕ: Добавляем кастомное действие для быстрого закрепления
+    actions = ['make_featured', 'unmake_featured']
+
+    @admin.action(description='Закрепить выбранные статьи')
+    def make_featured(self, request, queryset):
+        queryset.update(is_featured=True)
+        self.message_user(request, "Выбранные статьи были закреплены.", messages.SUCCESS)
+
+    @admin.action(description='Открепить выбранные статьи')
+    def unmake_featured(self, request, queryset):
+        queryset.update(is_featured=False)
+        self.message_user(request, "Выбранные статьи были откреплены.", messages.SUCCESS)

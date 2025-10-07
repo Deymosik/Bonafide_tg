@@ -6,7 +6,7 @@ import './TabBar.css';
 
 // Импортируем наши SVG иконки
 import { ReactComponent as HomeIcon } from '../assets/home-icon.svg';
-import { ReactComponent as SearchIcon } from '../assets/search-icon.svg';
+import { ReactComponent as ArticleIcon } from '../assets/article-icon.svg';
 import { ReactComponent as CartIcon } from '../assets/cart-icon.svg';
 import { ReactComponent as FaqIcon } from '../assets/faq-icon.svg';
 
@@ -20,9 +20,9 @@ const TabBar = () => {
                 <HomeIcon />
                 <span>Главная</span>
             </NavLink>
-            <NavLink to="/search" className="tab-bar-item">
-                <SearchIcon />
-                <span>Поиск</span>
+            <NavLink to="/articles" className="tab-bar-item">
+                <ArticleIcon />
+                <span>Статьи</span>
             </NavLink>
             <NavLink to="/cart" className="tab-bar-item">
                 <div className="cart-icon-wrapper">

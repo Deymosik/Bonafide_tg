@@ -34,7 +34,7 @@
 .tab-bar-item svg {
     width: 22px;
     height: 22px;
-    fill: var(--app-secondary-bg-color);
+    fill: var(--app-hint-color);
     margin-bottom: 2px;
     transition: transform 0.2s ease;
 }
@@ -52,6 +52,7 @@
 
 .tab-bar-item.active svg {
     transform: scale(1.1); /* Слегка увеличиваем активную иконку */
+    fill: var(--app-button-color);
 }
 
 /* Стили для значка на корзине */

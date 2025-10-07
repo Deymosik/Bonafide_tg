@@ -34,7 +34,6 @@ const CartPage = () => {
 
     const settings = useSettings();
 
-    // ИЗМЕНЕНИЕ: Добавляем вспомогательную функцию для форматирования цены
     const formatPrice = (priceString) => {
         // Преобразуем строку в число и проверяем, равно ли оно нулю
         if (parseFloat(priceString) === 0) {

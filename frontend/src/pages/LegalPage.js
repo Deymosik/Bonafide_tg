@@ -14,8 +14,8 @@ const LegalPage = () => {
 
     // Определяем, какой документ показывать, на основе URL
     const isPrivacyPage = location.pathname.includes('/privacy');
-    const title = isPrivacyPage ? 'Политика конфиденциальности' : 'Публичная оферта';
     const content = isPrivacyPage ? settings.privacy_policy : settings.public_offer;
+    const title = isPrivacyPage ? 'Политика конфиденциальности' : 'Публичная оферта';
 
     // Показываем и настраиваем кнопку "Назад"
     useEffect(() => {

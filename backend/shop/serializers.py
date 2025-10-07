@@ -1,9 +1,11 @@
 # backend/shop/serializers.py
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import (
     InfoPanel, Category, Product, ProductImage, PromoBanner,
     ProductInfoCard, ColorGroup, ShopSettings, FaqItem, ShopImage,
-    Feature, CharacteristicCategory, Characteristic, ProductCharacteristic, Cart, CartItem, Order, OrderItem
+    Feature, CharacteristicCategory, Characteristic,
+    ProductCharacteristic, Cart, CartItem, Order, OrderItem, Article, ArticleCategory
 )
 
 
@@ -238,8 +240,11 @@ class ShopSettingsSerializer(serializers.ModelSerializer):
         fields = (
             'manager_username', 'contact_phone', 'about_us_section',
             'delivery_section', 'warranty_section', 'images', 'free_shipping_threshold',
-            'search_placeholder', 'search_initial_text', 'search_lottie_url', 'cart_lottie_url',
-            'public_offer', 'privacy_policy'
+            'search_placeholder', 'search_initial_text', 'search_lottie_url', 'cart_lottie_url', 'article_font_family',
+            'public_offer', 'privacy_policy', 'site_name','seo_title_home', 'seo_description_home',
+            'seo_title_blog', 'seo_description_blog', 'seo_title_product', 'seo_description_product',
+            'seo_title_cart', 'seo_description_cart', 'seo_title_faq', 'seo_description_faq',
+            'seo_title_checkout', 'seo_description_checkout',
         )
 
     def get_search_lottie_url(self, obj):
@@ -386,3 +391,51 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             )
 
         return order
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    """Сериализатор для краткой информации об авторе."""
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
+
+class ArticleCategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для категорий статей."""
+    class Meta:
+        model = ArticleCategory
+        fields = ('name', 'slug')
+
+class ArticleListSerializer(ImageUrlBuilderSerializer):
+    """Сериализатор для списка статей (краткая информация)."""
+    category = ArticleCategorySerializer(read_only=True)
+    cover_image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Article
+        fields = ('title', 'slug', 'published_at', 'category', 'cover_image_url')
+
+    def get_cover_image_url(self, obj):
+        return self._get_absolute_url(obj.cover_image_list_thumbnail)
+
+class ArticleDetailSerializer(ImageUrlBuilderSerializer):
+    """Сериализатор для детального отображения статьи."""
+    category = ArticleCategorySerializer(read_only=True)
+    author = AuthorSerializer(read_only=True)
+    related_products = ProductListSerializer(many=True, read_only=True)
+    cover_image_url = serializers.SerializerMethodField()
+
+    # 1. ИЗМЕНЕНИЕ: Добавляем поле для времени чтения
+    reading_time = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = (
+            'title', 'slug', 'author', 'published_at', 'cover_image_url',
+            'content_type', 'content', 'external_url', 'category',
+            'related_products', 'meta_title', 'meta_description',
+            'views_count',      # <-- 2. ИЗМЕНЕНИЕ: Добавляем счётчик просмотров
+            'reading_time'      # <-- 2. ИЗМЕНЕНИЕ: Добавляем время чтения
+        )
+
+    def get_cover_image_url(self, obj):
+        return self._get_absolute_url(obj.cover_image_detail_thumbnail)

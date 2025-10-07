@@ -6,6 +6,10 @@ from django.db.models import Case, When, F, DecimalField
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from colorfield.fields import ColorField
+from django.contrib.auth.models import User
+from django.utils.text import slugify
+from django.utils.html import strip_tags
+import math # Импортируем math для округления
 
 # --- Модель InfoPanel (без изменений) ---
 class InfoPanel(models.Model):
@@ -318,6 +322,36 @@ class ShopSettings(models.Model):
         help_text="Отображается в пустой корзине"
     )
 
+    article_font_family = models.CharField("Название шрифта для статей", max_length=100, default="Exo 2",help_text="Например: 'Roboto', 'Times New Roman', 'Exo 2'")
+
+    # --- 1. ИЗМЕНЕНИЕ: Добавляем блок SEO-полей ---
+    site_name = models.CharField("Название сайта (для SEO)", max_length=50, default="BonaFide55", help_text="Используется в шаблонах мета-тегов как переменная {{site_name}}")
+
+    # SEO - Главная страница
+    seo_title_home = models.CharField("SEO Title для Главной", max_length=255, blank=True, default="{{site_name}} | Главная")
+    seo_description_home = models.TextField("SEO Description для Главной", blank=True, default="Лучшие гаджеты и аксессуары в {{site_name}}.")
+
+    # SEO - Страница Блога
+    seo_title_blog = models.CharField("SEO Title для Блога", max_length=255, blank=True, default="Блог | {{site_name}}")
+    seo_description_blog = models.TextField("SEO Description для Блога", blank=True, default="Интересные статьи, обзоры и новости от {{site_name}}.")
+
+    # SEO - Страница Товара (шаблон)
+    seo_title_product = models.CharField("SEO Title для Товара", max_length=255, blank=True, default="Купить {{product_name}} | {{site_name}}", help_text="Доступные переменные: {{product_name}}, {{product_price}}, {{site_name}}")
+    seo_description_product = models.TextField("SEO Description для Товара", blank=True, default="Закажите {{product_name}} с доставкой. Лучшая цена: {{product_price}} ₽.", help_text="Доступные переменные: {{product_name}}, {{product_price}}, {{site_name}}")
+
+    # SEO - Корзина
+    seo_title_cart = models.CharField("SEO Title для Корзины", max_length=255, blank=True, default="Ваша корзина | {{site_name}}")
+    seo_description_cart = models.TextField("SEO Description для Корзины", blank=True, default="Оформите заказ на выбранные товары в {{site_name}}.")
+
+    # SEO - Инфо (FAQ)
+    seo_title_faq = models.CharField("SEO Title для Инфо/FAQ", max_length=255, blank=True, default="Информация и FAQ | {{site_name}}")
+    seo_description_faq = models.TextField("SEO Description для Инфо/FAQ", blank=True, default="Ответы на частые вопросы, информация о доставке и гарантии от {{site_name}}.")
+
+    # SEO - Оформление заказа
+    seo_title_checkout = models.CharField("SEO Title для Оформления заказа", max_length=255, blank=True, default="Оформление заказа | {{site_name}}")
+    seo_description_checkout = models.TextField("SEO Description для Оформления заказа", blank=True, default="Заполните данные для завершения вашего заказа в {{site_name}}.")
+
+
     privacy_policy = CKEditor5Field("Политика конфиденциальности", blank=True, config_name='default')
     public_offer = CKEditor5Field("Публичная оферта", blank=True, config_name='default')
 
@@ -467,3 +501,91 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Товар в заказе"
         verbose_name_plural = "Товары в заказе"
+
+
+class ArticleCategory(models.Model):
+    """Категории для статей (например, Обзоры, Новости)."""
+    name = models.CharField("Название категории", max_length=100, unique=True)
+    slug = models.SlugField("URL-slug", unique=True, help_text="Используется в URL. Заполнится автоматически.")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Категория статьи"
+        verbose_name_plural = "Категории статей"
+        ordering = ['name']
+
+
+class Article(models.Model):
+    """Модель для статей или записей в блоге."""
+    class Status(models.TextChoices):
+        DRAFT = 'DRAFT', 'Черновик'
+        PUBLISHED = 'PUBLISHED', 'Опубликовано'
+
+    class ContentType(models.TextChoices):
+        INTERNAL = 'INTERNAL', 'Внутренняя статья'
+        EXTERNAL = 'EXTERNAL', 'Внешняя ссылка'
+
+    # --- Основное содержимое ---
+    title = models.CharField("Заголовок статьи", max_length=200)
+    slug = models.SlugField("URL-slug", max_length=220, unique=True, blank=True, help_text="Человекопонятный URL. Генерируется из заголовка, но можно отредактировать. Пример: 'kak-vybrat-naushniki'")
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Автор")
+    published_at = models.DateTimeField("Дата публикации", default=timezone.now)
+
+    # --- ВОТ ПЕРВОЕ НЕДОСТАЮЩЕЕ ПОЛЕ ---
+    cover_image = models.ImageField("Обложка статьи (оригинал)", upload_to='articles/covers/', help_text="Будет отображаться в списке статей и при репосте в соцсети.")
+
+    # Оптимизаторы теперь будут работать, так как есть 'source'
+    cover_image_list_thumbnail = ImageSpecField(source='cover_image',
+                                                processors=[ResizeToFit(width=600)],
+                                                format='WEBP',
+                                                options={'quality': 80})
+    cover_image_detail_thumbnail = ImageSpecField(source='cover_image',
+                                                  processors=[ResizeToFit(width=1200)],
+                                                  format='WEBP',
+                                                  options={'quality': 85})
+
+    # --- Тип и тело статьи ---
+    # --- ВОТ ВТОРОЕ НЕДОСТАЮЩЕЕ ПОЛЕ ---
+    content_type = models.CharField("Тип контента", max_length=10, choices=ContentType.choices, default=ContentType.INTERNAL)
+
+    content = CKEditor5Field("Содержимое статьи", config_name='default', blank=True, help_text="Для 'Внутренней статьи'. <b>ВАЖНО:</b> перед загрузкой изображений в редактор, сожмите их с помощью онлайн-сервисов (например, TinyPNG) до размера < 1 МБ.")
+    external_url = models.URLField("URL внешней статьи", blank=True, help_text="Для 'Внешней ссылки'. Укажите полный URL, например, https://example.com/article")
+
+    # --- Организация и связи ---
+    category = models.ForeignKey(ArticleCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Категория")
+    status = models.CharField("Статус", max_length=10, choices=Status.choices, default=Status.DRAFT, help_text="'Черновик' не виден пользователям, 'Опубликовано' - виден всем.")
+    is_featured = models.BooleanField("Закрепленная статья", default=False, help_text="Отметьте, чтобы статья отображалась в особых блоках (например, 'Статья дня').")
+    related_products = models.ManyToManyField(Product, blank=True, verbose_name="Связанные товары", help_text="Товары, которые будут рекомендоваться в конце статьи.")
+
+    # --- SEO ---
+    meta_title = models.CharField("Meta Title (для SEO)", max_length=60, blank=True, help_text="Заголовок для вкладки браузера и поисковиков (до 60 символов). Если пусто, используется основной заголовок.")
+    meta_description = models.TextField("Meta Description (для SEO)", max_length=160, blank=True, help_text="Краткое описание для Google и Яндекс (до 160 символов). Очень важно для привлечения пользователей.")
+    views_count = models.PositiveIntegerField("Количество просмотров", default=0, editable=False) # editable=False, чтобы его нельзя было изменить вручную в админке
+
+    @property
+    def reading_time(self):
+        """Вычисляет примерное время на чтение статьи в минутах."""
+        if self.content_type == self.ContentType.INTERNAL and self.content:
+            # Очищаем HTML-теги, чтобы посчитать только слова
+            plain_text = strip_tags(self.content)
+            word_count = len(plain_text.split())
+            # Средняя скорость чтения взрослого человека ~200 слов в минуту
+            time_in_minutes = math.ceil(word_count / 200)
+            return time_in_minutes
+        return 0 # Для внешних ссылок или пустых статей время чтения 0
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        # Автоматическое создание slug из title, если slug не задан
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Статья"
+        verbose_name_plural = "Статьи"
+        ordering = ['-published_at']
